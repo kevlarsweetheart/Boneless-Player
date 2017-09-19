@@ -4,11 +4,11 @@
 #
 # See documentation in:
 # http://doc.scrapy.org/en/latest/topics/items.html
-
 import scrapy
 
 
 class ChartsCrawlerItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
+    link = scrapy.Field()
+    date = scrapy.Field()
+    chart = scrapy.Field()
+    source = scrapy.Field()
