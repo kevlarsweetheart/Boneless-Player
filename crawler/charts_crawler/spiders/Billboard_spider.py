@@ -2,6 +2,39 @@ import scrapy
 from datetime import date
 import re
 from charts_crawler.addons.lastfm import LastfmNet
+from charts_crawler.items import ChartsCrawlerItem
+
+
+
+class BillboardLinksSpider(scrapy.Spider):
+    name = 'Billboard_charts'
+    start_urls = ['http://www.billboard.com/charts/hot-100',
+            'http://www.billboard.com/charts/billboard-200',
+            'http://www.billboard.com/charts/artist-100']
+    allowed_domains = ['www.billboard.com']
+
+
+    def parse(self, response):
+        url = response.url
+        _url = url.split('/')
+        item = None
+        print(url)
+        if len(_url) == 6:
+            item = ChartsCrawlerItem(link = url, date = _url[-1], chart = _url[-2], source = 'billboard')
+        elif len(_url) == 5:
+            date_div = response.xpath('.//div[contains(@class, "chart-data-header")]')
+            date = date_div.xpath(".//time/@datetime").extract_first()
+            item = ChartsCrawlerItem(link = url, date = date, chart = _url[-1], source = 'billboard')
+
+        yield item
+        new_page = response.xpath('//a[contains(@title, "Previous Week")]/@href').extract_first()
+        if new_page is not None:
+            new_page = 'http://' + self.allowed_domains[0] + new_page
+            print(new_page)
+            yield scrapy.Request(new_page, callback=self.parse)
+
+
+
 
 class BillBoardSpider(scrapy.Spider):
     name = 'Billboard'
