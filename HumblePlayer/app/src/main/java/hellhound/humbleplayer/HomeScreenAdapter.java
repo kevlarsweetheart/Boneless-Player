@@ -3,6 +3,8 @@ package hellhound.humbleplayer;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.CardView;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,34 +14,42 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-public class HomeScreenAdapter extends ArrayAdapter<HomeScreenItem> {
+public class HomeScreenAdapter extends RecyclerView.Adapter<HomeScreenAdapter.ViewHolder>{
 
-    HomeScreenAdapter(@NonNull Context context, ArrayList<HomeScreenItem> content) {
-        super(context, R.layout.home_list_item, content);
+    private static final String TAG = "Debugging";
+    private Context parent;
+    private ArrayList<MenuItem> items;
+
+    public HomeScreenAdapter(@NonNull Context parent, ArrayList<MenuItem> items){
+        this.items = items;
+        this.parent = parent;
     }
 
-    @NonNull
     @Override
-    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        LayoutInflater inflater = LayoutInflater.from(getContext());
-        HomeScreenItem item = getItem(position);
+    public int getItemCount() {
+        return items.size();
+    }
 
-        View view;
-        switch (item.getType()){
-            case HSI:
-                view = inflater.inflate(R.layout.home_list_item, parent, false);
-                break;
+    @Override
+    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        return null;
+    }
 
-            default:
-                view = inflater.inflate(R.layout.device_path_item, parent, false);
-                break;
+    @Override
+    public void onAttachedToRecyclerView(RecyclerView recyclerView) {
+        super.onAttachedToRecyclerView(recyclerView);
+    }
+
+    @Override
+    public void onBindViewHolder(ViewHolder holder, int position) {
+
+    }
+
+    public static class ViewHolder extends RecyclerView.ViewHolder{
+        CardView v;
+
+        ViewHolder(View itemView){
+            super(itemView);
         }
-
-        TextView text = (TextView) view.findViewById(R.id.list_text);
-        ImageView image = (ImageView) view.findViewById(R.id.list_pic);
-
-        text.setText(item.getText());
-        image.setImageResource(item.getImage());
-        return view;
     }
 }
