@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/rounded_backgound">
+
+    <ImageButton
+        android:id="@+id/replay_button"
+        android:layout_toStartOf="@+id/prev_button"
+        android:layout_alignParentBottom="true"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:contentDescription="@string/replay_button"
+        android:background="@null"
+        android:scaleType="fitCenter"
+        android:adjustViewBounds="true"
+        android:src="@drawable/replay"
+        android:layout_margin="30dp" />
+
+    <ImageButton
+        android:id="@+id/prev_button"
+        android:layout_toStartOf="@+id/play_button"
+        android:layout_alignParentBottom="true"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:contentDescription="@string/back_button"
+        android:background="@null"
+        android:scaleType="fitCenter"
+        android:adjustViewBounds="true"
+        android:src="@drawable/back"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="10dp"/>
+
+    <ImageButton
+        android:id="@+id/play_button"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:contentDescription="@string/play_button"
+        android:background="@null"
+        android:scaleType="fitCenter"
+        android:adjustViewBounds="true"
+        android:src="@drawable/play_button"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="10dp"/>
+
+    <ImageButton
+        android:id="@+id/next_button"
+        android:layout_toEndOf="@+id/play_button"
+        android:layout_alignParentBottom="true"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:contentDescription="@string/next_button"
+        android:background="@null"
+        android:scaleType="fitCenter"
+        android:adjustViewBounds="true"
+        android:src="@drawable/next"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="10dp"/>
+
+    <ImageButton
+        android:id="@+id/shuffle_button"
+        android:layout_toEndOf="@+id/next_button"
+        android:layout_alignParentBottom="true"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:contentDescription="@string/shuffle_button"
+        android:background="@null"
+        android:scaleType="fitCenter"
+        android:adjustViewBounds="true"
+        android:src="@drawable/shuffle"
+        android:layout_margin="30dp" />
+
+    <TextView
+        android:id="@+id/track_name"
+        android:text="@string/default_name"
+        style="@style/controlText"
+        android:textColor="#000000"
+        android:fontFamily="monospace"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="20dp"
+        android:layout_above="@id/track_album_artist"/>
+
+    <TextView
+        android:id="@+id/track_album_artist"
+        android:text="@string/default_artist_album"
+        style="@style/controlText"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:singleLine="true"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="20dp"
+        android:layout_above="@id/play_button"
+        android:layout_marginBottom="10dp"/>
+
+</RelativeLayout>
