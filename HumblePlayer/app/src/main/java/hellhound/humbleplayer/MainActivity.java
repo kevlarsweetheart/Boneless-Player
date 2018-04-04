@@ -38,8 +38,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void setHomeItems(){
         homeItems = new ArrayList<MenuItem>();
-        homeItems.add(new HomeScreenItem("Albums", R.drawable.background_album));
         homeItems.add(new HomeScreenItem("Artists", R.drawable.background_artists));
+        homeItems.add(new HomeScreenItem("Albums", R.drawable.background_album));
         homeItems.add(new HomeScreenItem("Songs", R.drawable.background_song));
         homeItems.add(new HomeScreenItem("Playlists", R.drawable.background_playlist));
         homeItems.add(new HomeScreenItem("Queue", R.drawable.background_queue));
