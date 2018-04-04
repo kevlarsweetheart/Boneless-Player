@@ -3,28 +3,38 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent" android:layout_height="match_parent">
 
-    <ImageView
-        android:id="@+id/list_pic"
-        android:layout_width="70dp"
-        android:layout_height="70dp"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginEnd="20dp"
-        android:layout_marginTop="40dp"
-        android:layout_marginStart="60dp"
-        android:adjustViewBounds="true"
-        android:background="@null"
-        android:contentDescription="@string/list_label"
-        android:scaleType="fitCenter"
-        app:srcCompat="@drawable/library" />
-
-    <TextView
-        android:id="@+id/list_text"
-        android:layout_width="wrap_content"
+    <android.support.v7.widget.CardView
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_toEndOf="@id/list_pic"
-        android:layout_marginTop="40dp"
-        android:layout_marginStart="40dp"
-        android:text="@string/library_text"
-        android:textSize="30sp"/>
+        android:layout_gravity="center"
+        android:layout_margin="5dp"
+        android:id="@+id/cv">
+
+       <RelativeLayout
+           android:layout_width="wrap_content"
+           android:layout_height="80dp"
+           android:layout_gravity="center"
+           android:gravity="center"
+           android:orientation="vertical">
+
+           <ImageView
+               android:id="@+id/cv_background"
+               android:layout_width="match_parent"
+               android:layout_height="match_parent"
+               android:src="@drawable/background_artists"
+               android:scaleType="centerCrop"/>
+
+           <TextView
+               android:id="@+id/cv_text"
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
+               android:layout_centerInParent="true"
+               android:textColor="#FFF"
+               android:shadowColor="#000"
+               android:shadowRadius="2"
+               android:text="Kek"
+               android:textSize="40sp"/>
+
+       </RelativeLayout>
+    </android.support.v7.widget.CardView>
 </RelativeLayout>
