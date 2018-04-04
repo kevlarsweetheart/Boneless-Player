@@ -1,27 +1,32 @@
 package hellhound.humbleplayer;
 
 public class MenuItem {
-    private String heading;
+    private String name;
     public enum TYPES {HOME, SONG, ALBUM, ARTIST, PATH}
     private TYPES type;
+    private static int cnt = 0;
+    private int itemId;
 
-    MenuItem(String heading){
-        this.heading = heading;
+    MenuItem(String name){
+        this.name = name;
+        itemId = cnt;
+        cnt++;
+
     }
 
     public String getName() {
-        return heading;
+        return name;
     }
 
     public void setName(String name) {
-        this.heading = heading;
+        this.name = name;
     }
 
     public TYPES getType() {
         return type;
     }
 
-    public void setType(TYPES type) {
-        this.type = type;
+    public int getItemId() {
+        return itemId;
     }
 }
