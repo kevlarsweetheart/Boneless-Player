@@ -2,15 +2,15 @@ package hellhound.humbleplayer;
 
 
 public class HomeScreenItem extends MenuItem {
-    private int resourseId;
+    private int resourceId;
 
     public HomeScreenItem(String heading, int res) {
         super(heading);
-        setType(TYPES.HOME);
-        this.resourseId = res;
+        this.type = TYPES.HOME;
+        this.resourceId = res;
     }
 
-    public int getResourseId() {
-        return resourseId;
+    public int getResourceId() {
+        return resourceId;
     }
 }

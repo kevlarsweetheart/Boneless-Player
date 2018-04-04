@@ -1,5 +1,6 @@
 package hellhound.humbleplayer;
 
+import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -18,6 +19,7 @@ public class MainActivity extends AppCompatActivity {
     private HomeScreenAdapter adapter;
     private RecyclerView.LayoutManager layoutManager;
     private Stack<String> state;
+    private DatabaseHelper db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,14 +27,20 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         state = new Stack<String>();
-        setHomeItems();
 
+        
+        db = new DatabaseHelper(getApplicationContext());
+        db.addArtist(new ArtistItem("Jack Black"));
+        db.addArtist(new ArtistItem("Lana Banana"));
+        db.addArtist(new ArtistItem("Abraham"));
+
+        setHomeItems();
         recyclerView = (RecyclerView) findViewById(R.id.rv);
         recyclerView.setHasFixedSize(false);
         layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
 
-        adapter = new HomeScreenAdapter(this, homeItems);
+        adapter = new HomeScreenAdapter(this, homeItems, db);
         recyclerView.setAdapter(adapter);
     }
 
@@ -43,5 +51,11 @@ public class MainActivity extends AppCompatActivity {
         homeItems.add(new HomeScreenItem("Songs", R.drawable.background_song));
         homeItems.add(new HomeScreenItem("Playlists", R.drawable.background_playlist));
         homeItems.add(new HomeScreenItem("Queue", R.drawable.background_queue));
+    }
+
+    @Override
+    protected void onDestroy() {
+        db.onUpgrade(db.getReadableDatabase(), 1, 1);
+        super.onDestroy();
     }
 }

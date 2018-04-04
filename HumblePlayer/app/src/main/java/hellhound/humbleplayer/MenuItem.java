@@ -3,15 +3,14 @@ package hellhound.humbleplayer;
 public class MenuItem {
     private String name;
     public enum TYPES {HOME, SONG, ALBUM, ARTIST, PATH}
-    private TYPES type;
-    private static int cnt = 0;
+    protected TYPES type;
+    private static int cnt = -2147483648;
     private int itemId;
 
     MenuItem(String name){
         this.name = name;
         itemId = cnt;
         cnt++;
-
     }
 
     public String getName() {
