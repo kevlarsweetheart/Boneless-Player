@@ -32,14 +32,12 @@ public class MainActivity extends AppCompatActivity {
         Log.i(TAG, "Creating db");
         db = new DatabaseHelper(getApplicationContext());
         Log.i(TAG, "Created db");
-        db.getReadableDatabase();
-        /*
         db.addArtist(new ArtistItem("Jack Black"));
         Log.i(TAG, "Added Jack");
         db.addArtist(new ArtistItem("Lana Banana"));
         Log.i(TAG, "Added Banana");
         db.addArtist(new ArtistItem("Abraham"));
-        Log.i(TAG, "Populated db");*/
+        Log.i(TAG, "Populated db");
 
         setHomeItems();
         recyclerView = (RecyclerView) findViewById(R.id.rv);

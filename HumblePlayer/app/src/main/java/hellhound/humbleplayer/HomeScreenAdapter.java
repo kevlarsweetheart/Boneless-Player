@@ -115,12 +115,13 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     }
 
     public void updateView(ArrayList<MenuItem> newItems){
+        Log.i(TAG, "I'm in!");
         Toast.makeText(parent, newItems.get(0).getName(), Toast.LENGTH_SHORT);
-        /*
         DiffCallback callback = new DiffCallback(items, newItems);
         DiffUtil.DiffResult res = DiffUtil.calculateDiff(callback, true);
         this.items = newItems;
-        res.dispatchUpdatesTo(this);*/
+        res.dispatchUpdatesTo(this);
+        Log.i(TAG, "Dispatched");
     }
 
     /*---------------------------- Artists View Holder -------------------------------------------*/
@@ -150,15 +151,15 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                     //cardView.setAlpha(0.5f);
                     anim.setDuration(50);
                     anim.setEvaluator(new FloatEvaluator());
-                    //anim.setRepeatCount(ValueAnimator.RESTART);
-                    //anim.setRepeatMode(ValueAnimator.RESTART);
                     anim.start();
                     return true;
 
                 case MotionEvent.ACTION_UP:
                     cardView.setAlpha(0.9f);
                     if (name.equals("Artists")) {
+                        Log.i(TAG, "Going to update");
                         updateView(db.getAllArtists());
+                        Log.i(TAG, "Updated!");
                     }
                     return true;
             }

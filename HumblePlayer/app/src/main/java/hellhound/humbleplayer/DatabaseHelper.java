@@ -5,47 +5,37 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.nfc.Tag;
 import android.util.Log;
 
 import java.util.ArrayList;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
-    private static final String TAG = "Debugging";
 
-    private static final String DATABASE_NAME = "app_database.db";
+    private final static String TAG = "Debugging";
+    private final static String DB_NAME = "boneless.db";
+    private final static int DATABASE_VERSION = 1;
 
-    private static final int DATABASE_VERSION = 1;
-
-    private static final String TABLE_ARTISTS = "artists";
-
-    private static final String KEY_ARTIST_ID = "artist_id";
-    private static final String KEY_ARTIST_NAME = "artist_name";
+    private final static String TABLE_ARTISTS = "artists";
+    private final static String KEY_ARTIST_NAME = "artists_name";
     private static final String KEY_COVER_ART_ID = "cover_art_id";
 
-    private static final String CREATE_TABLE_ARTISTS = "CREATE TABLE " + TABLE_ARTISTS +
-            "(" + KEY_ARTIST_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_ARTIST_NAME + " TEXT NOT NULL UNIQUE, " +
-            KEY_COVER_ART_ID + " INTEGER);";     //"FOREIGN KEY(" + KEY_COVER_ART + ") REFERENCES ...
 
     public DatabaseHelper(Context context) {
-        super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        super(context, DB_NAME, null, DATABASE_VERSION);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        Log.i(TAG, CREATE_TABLE_ARTISTS);
-        db.execSQL("CREATE TABLE artists(artist_name TEXT);");
-        showTables();
+        String createArtists = "CREATE TABLE " + TABLE_ARTISTS + "(" + KEY_ARTIST_NAME + " TEXT NOT NULL, " +
+                KEY_COVER_ART_ID + " INTEGER);";
+        db.execSQL(createArtists);
 
-        //creating default artist UNKNOWN
-        ArtistItem unknown = new ArtistItem("Unknown");
-        long pos = addArtist(unknown);
-        Log.i(TAG, "Unknown added at position " + String.valueOf(pos));
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int i, int i1) {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_ARTISTS);
+
         onCreate(db);
     }
 
@@ -88,17 +78,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         SQLiteDatabase db = this.getReadableDatabase();
         String query = "SELECT * FROM " + TABLE_ARTISTS + " ORDER BY " +
-                TABLE_ARTISTS + "." + KEY_ARTIST_NAME + " ASC;";
+                KEY_ARTIST_NAME + " ASC;";
 
         Cursor c = db.rawQuery(query, null);
+        Log.i(TAG, "Created cursor");
 
         if(c != null){
             c.moveToFirst();
-            do {
+            while (!c.isAfterLast()) {
+                Log.i(TAG, "Added " + c.getString(c.getColumnIndex(KEY_ARTIST_NAME)));
                 MenuItem item = new ArtistItem(c.getString(c.getColumnIndex(KEY_ARTIST_NAME)));
                 ((ArtistItem) item).setCoverArtId(c.getInt(c.getColumnIndex(KEY_COVER_ART_ID)));
                 res.add(item);
-            } while (!c.isLast());
+                c.moveToNext();
+            }
         }
         c.close();
         db.close();
