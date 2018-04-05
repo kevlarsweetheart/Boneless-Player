@@ -73,15 +73,20 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        Log.i(TAG,"onCreateViewHolder");
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         RecyclerView.ViewHolder holder;
-        Log.i(TAG,"ViewType = " + String.valueOf(viewType));
+        View v;
         switch (viewType){
             case 0:
-                View v = inflater.inflate(R.layout.home_list_item, parent, false);
+                v = inflater.inflate(R.layout.home_list_item, parent, false);
                 holder = new ViewHolderHome(v);
-                Log.i(TAG, "Returning holder");
+                Log.i(TAG, "Created Home Item Holder");
+                return holder;
+
+            case 2:
+                v = inflater.inflate(R.layout.artist_list_item, parent, false);
+                holder = new ViewHolderArtist(v);
+                Log.i(TAG, "Created Artists Holder");
                 return holder;
 
             default:
@@ -93,12 +98,17 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         int viewType = getItemViewType(position);
         Log.i(TAG,"Binding, viewType = " + String.valueOf(viewType));
+        MenuItem item = items.get(position);
         switch (viewType){
             case 0:
-                MenuItem item = items.get(position);
                 ((ViewHolderHome) holder).textView.setText(item.getName());
                 ((ViewHolderHome) holder).imageView.setImageResource(((HomeScreenItem) item).getResourceId());
                 ((ViewHolderHome) holder).setListeners();
+                Log.i(TAG, "Done binding " + String.valueOf(position) + '\n' + '\n');
+                break;
+
+            case 2:
+                ((ViewHolderArtist) holder).textView.setText(item.getName());
                 Log.i(TAG, "Done binding " + String.valueOf(position) + '\n' + '\n');
                 break;
         }
@@ -113,6 +123,7 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         res.dispatchUpdatesTo(this);*/
     }
 
+    /*---------------------------- Artists View Holder -------------------------------------------*/
     public class ViewHolderHome extends RecyclerView.ViewHolder implements View.OnTouchListener{
         CardView cardView;
         TextView textView;
@@ -131,8 +142,10 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
         @Override
         public boolean onTouch(View view, MotionEvent motionEvent) {
+            String name = items.get(getAdapterPosition()).getName();
+
             ValueAnimator anim = ObjectAnimator.ofFloat(view, "alpha", 0.9f, 0.5f);
-            switch (motionEvent.getAction()){
+            switch (motionEvent.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     //cardView.setAlpha(0.5f);
                     anim.setDuration(50);
@@ -144,9 +157,24 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
                 case MotionEvent.ACTION_UP:
                     cardView.setAlpha(0.9f);
-                    updateView(db.getAllArtists());
+                    if (name.equals("Artists")) {
+                        updateView(db.getAllArtists());
+                    }
+                    return true;
             }
             return false;
+        }
+    }
+
+    /*---------------------------- Artists View Holder -------------------------------------------*/
+    public class ViewHolderArtist extends RecyclerView.ViewHolder{
+        CardView cardView;
+        TextView textView;
+
+        ViewHolderArtist(View view){
+            super(view);
+            cardView = (CardView) view.findViewById(R.id.cv);
+            textView = (TextView) view.findViewById(R.id.cv_text);
         }
     }
 

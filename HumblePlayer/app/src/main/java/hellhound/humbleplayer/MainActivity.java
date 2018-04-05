@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -28,11 +29,17 @@ public class MainActivity extends AppCompatActivity {
 
         state = new Stack<String>();
 
-        
+        Log.i(TAG, "Creating db");
         db = new DatabaseHelper(getApplicationContext());
+        Log.i(TAG, "Created db");
+        db.getReadableDatabase();
+        /*
         db.addArtist(new ArtistItem("Jack Black"));
+        Log.i(TAG, "Added Jack");
         db.addArtist(new ArtistItem("Lana Banana"));
+        Log.i(TAG, "Added Banana");
         db.addArtist(new ArtistItem("Abraham"));
+        Log.i(TAG, "Populated db");*/
 
         setHomeItems();
         recyclerView = (RecyclerView) findViewById(R.id.rv);
