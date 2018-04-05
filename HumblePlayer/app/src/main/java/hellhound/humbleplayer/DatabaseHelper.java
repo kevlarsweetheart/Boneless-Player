@@ -57,20 +57,43 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     /*------------------------------ Methods for Artists -----------------------------------------*/
     public long addArtist(ArtistItem item){
-        SQLiteDatabase db = this.getWritableDatabase();
 
-        Log.i(TAG, "Putting artist into db");
-        ContentValues values = new ContentValues();
-        values.put(KEY_ARTIST_NAME, item.getName());
-        /*
-        if (item.getCoverArtId() != -1){
-            values.put(KEY_COVER_ART_ID, item.getCoverArtId());
-        }*/
+        long artist_id = artistExists(item, false);
 
-        long artist_id = db.insert(TABLE_ARTISTS, null, values);
-        Log.i(TAG, "Put artist, rowid = " + String.valueOf(artist_id));
-        db.close();
+        if(artist_id == -1){
+            SQLiteDatabase db = this.getWritableDatabase();
+
+            ContentValues values = new ContentValues();
+            values.put(KEY_ARTIST_NAME, item.getName());
+            /*
+            if (item.getCoverArtId() != -1){
+                values.put(KEY_COVER_ART_ID, item.getCoverArtId());
+            }*/
+
+            artist_id = db.insert(TABLE_ARTISTS, null, values);
+            Log.i(TAG, "Put artist, rowid = " + String.valueOf(artist_id));
+            db.close();
+        }
+        Log.i(TAG, item.getName() + " returns " + String.valueOf(artist_id));
         return artist_id;
+    }
+
+    public int artistExists(ArtistItem item, boolean updateFound){
+        Log.i(TAG, "Searching for " + item. getName());
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT rowid FROM " + TABLE_ARTISTS +
+            " WHERE \"" + item.getName() + "\" = " + KEY_ARTIST_NAME + ";";
+        Cursor c = db.rawQuery(query, null);
+
+        int res = -1;
+        if(c.moveToFirst()){
+            res = c.getInt(c.getColumnIndex("rowid"));
+            Log.i(TAG, item.getName() + " found at " + String.valueOf(res));
+        }
+        c.close();
+        db.close();
+        Log.i(TAG, "Artist found at position " + String.valueOf(res));
+        return res;
     }
 
     public ArrayList<MenuItem> getAllArtists(){

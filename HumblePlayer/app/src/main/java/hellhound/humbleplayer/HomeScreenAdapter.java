@@ -1,6 +1,5 @@
 package hellhound.humbleplayer;
 
-import android.animation.ArgbEvaluator;
 import android.animation.FloatEvaluator;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
@@ -15,7 +14,6 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,11 +31,11 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         this.items = items;
         this.parent = parent;
         this.db = db;
-        Log.i(TAG, "GOING TO CREATE " + String.valueOf(items.size()) + " CARDS");
     }
 
     @Override
     public int getItemCount() {
+        Log.i(TAG, "There are " + String.valueOf(items.size()) + " items");
         return items.size();
     }
 
@@ -64,15 +62,21 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         }
     }
 
-    public void onItemsUpdate(ArrayList<MenuItem> oldList, ArrayList<MenuItem> newList){
-        DiffCallback diff = new DiffCallback(oldList, newList);
+
+    public void onItemsUpdate(ArrayList<MenuItem> newList){
+        Log.i(TAG, "onItemsUpdate");
+        DiffCallback diff = new DiffCallback(this.items, newList);
         DiffUtil.DiffResult res = DiffUtil.calculateDiff(diff, true);
-        this.items = newList;
+        Log.i(TAG, "Obtained diff results");
+        this.items.clear();
+        this.items.addAll(newList);
         res.dispatchUpdatesTo(this);
+        Log.i(TAG, "Updates dispatched");
     }
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        Log.i(TAG, "Creating " + String.valueOf(viewType));
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         RecyclerView.ViewHolder holder;
         View v;
@@ -114,18 +118,8 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         }
     }
 
-    public void updateView(ArrayList<MenuItem> newItems){
-        Log.i(TAG, "I'm in!");
-        Toast.makeText(parent, newItems.get(0).getName(), Toast.LENGTH_SHORT);
-        DiffCallback callback = new DiffCallback(items, newItems);
-        DiffUtil.DiffResult res = DiffUtil.calculateDiff(callback, true);
-        this.items = newItems;
-        res.dispatchUpdatesTo(this);
-        Log.i(TAG, "Dispatched");
-    }
-
-    /*---------------------------- Artists View Holder -------------------------------------------*/
-    public class ViewHolderHome extends RecyclerView.ViewHolder implements View.OnTouchListener{
+    /*------------------------------- Home View Holder -------------------------------------------*/
+    public class ViewHolderHome extends RecyclerView.ViewHolder implements View.OnClickListener{
         CardView cardView;
         TextView textView;
         ImageView imageView;
@@ -138,32 +132,13 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         }
 
         public void setListeners(){
-            cardView.setOnTouchListener(ViewHolderHome.this);
+            cardView.setOnClickListener(ViewHolderHome.this);
         }
 
         @Override
-        public boolean onTouch(View view, MotionEvent motionEvent) {
+        public void onClick(View view) {
             String name = items.get(getAdapterPosition()).getName();
-
-            ValueAnimator anim = ObjectAnimator.ofFloat(view, "alpha", 0.9f, 0.5f);
-            switch (motionEvent.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    //cardView.setAlpha(0.5f);
-                    anim.setDuration(50);
-                    anim.setEvaluator(new FloatEvaluator());
-                    anim.start();
-                    return true;
-
-                case MotionEvent.ACTION_UP:
-                    cardView.setAlpha(0.9f);
-                    if (name.equals("Artists")) {
-                        Log.i(TAG, "Going to update");
-                        updateView(db.getAllArtists());
-                        Log.i(TAG, "Updated!");
-                    }
-                    return true;
-            }
-            return false;
+            onItemsUpdate(db.getAllArtists());
         }
     }
 
