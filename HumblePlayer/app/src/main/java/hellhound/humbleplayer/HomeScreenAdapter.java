@@ -15,8 +15,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -35,7 +35,6 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
     @Override
     public int getItemCount() {
-        Log.i(TAG, "There are " + String.valueOf(items.size()) + " items");
         return items.size();
     }
 
@@ -63,7 +62,8 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     }
 
 
-    public void onItemsUpdate(ArrayList<MenuItem> newList){
+    private void onItemsUpdate(ArrayList<MenuItem> newList){
+        /*
         Log.i(TAG, "onItemsUpdate");
         DiffCallback diff = new DiffCallback(this.items, newList);
         DiffUtil.DiffResult res = DiffUtil.calculateDiff(diff, true);
@@ -72,11 +72,14 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         this.items.addAll(newList);
         res.dispatchUpdatesTo(this);
         Log.i(TAG, "Updates dispatched");
+        */
+        this.items.clear();
+        this.items.addAll(newList);
+        notifyDataSetChanged();
     }
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        Log.i(TAG, "Creating " + String.valueOf(viewType));
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         RecyclerView.ViewHolder holder;
         View v;
@@ -113,6 +116,7 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
             case 2:
                 ((ViewHolderArtist) holder).textView.setText(item.getName());
+                ((ViewHolderArtist) holder).setListeners();
                 Log.i(TAG, "Done binding " + String.valueOf(position) + '\n' + '\n');
                 break;
         }
@@ -131,26 +135,52 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
             cardView = (CardView) itemView.findViewById(R.id.cv);
         }
 
-        public void setListeners(){
+        void setListeners(){
             cardView.setOnClickListener(ViewHolderHome.this);
         }
 
         @Override
         public void onClick(View view) {
             String name = items.get(getAdapterPosition()).getName();
-            onItemsUpdate(db.getAllArtists());
+            if (name.equals("Artists")){
+                onItemsUpdate(db.getAllArtists());
+            }
         }
     }
 
     /*---------------------------- Artists View Holder -------------------------------------------*/
-    public class ViewHolderArtist extends RecyclerView.ViewHolder{
+    public class ViewHolderArtist extends RecyclerView.ViewHolder implements View.OnClickListener{
         CardView cardView;
         TextView textView;
+        RelativeLayout topLayout;
+        RelativeLayout bottomLayout;
 
         ViewHolderArtist(View view){
             super(view);
             cardView = (CardView) view.findViewById(R.id.cv);
             textView = (TextView) view.findViewById(R.id.cv_text);
+            topLayout = (RelativeLayout) view.findViewById(R.id.top_layout);
+            bottomLayout = (RelativeLayout) view.findViewById(R.id.bottom_layout);
+        }
+
+        void setListeners(){
+            topLayout.setOnClickListener(ViewHolderArtist.this);
+        }
+
+        @Override
+        public void onClick(View view) {
+            int visibility = bottomLayout.getVisibility();
+            Log.i(TAG, String.valueOf(visibility));
+
+            switch (visibility){
+                case View.VISIBLE:
+                    bottomLayout.setVisibility(View.GONE);
+                    break;
+
+                case View.GONE:
+                    bottomLayout.setVisibility(View.VISIBLE);
+                    break;
+            }
         }
     }
 

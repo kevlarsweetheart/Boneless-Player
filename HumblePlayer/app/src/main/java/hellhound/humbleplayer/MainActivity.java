@@ -31,6 +31,16 @@ public class MainActivity extends AppCompatActivity {
 
         db = new DatabaseHelper(getApplicationContext());
         db.addArtist(new ArtistItem("Jack Black"));
+        db.addArtist(new ArtistItem("Mack Black"));
+        db.addArtist(new ArtistItem("Aack Black"));
+        db.addArtist(new ArtistItem("Rack Black"));
+        db.addArtist(new ArtistItem("Gack Black"));
+        db.addArtist(new ArtistItem("Uack Black"));
+        db.addArtist(new ArtistItem("Lack Black"));
+        db.addArtist(new ArtistItem("Lfck Black"));
+        db.addArtist(new ArtistItem("Lsck Black"));
+        db.addArtist(new ArtistItem("Luck Black"));
+        db.addArtist(new ArtistItem("Lrck Black"));
 
         setHomeItems();
         recyclerView = (RecyclerView) findViewById(R.id.rv);
