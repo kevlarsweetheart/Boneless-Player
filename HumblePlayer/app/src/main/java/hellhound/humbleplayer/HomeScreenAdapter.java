@@ -87,13 +87,11 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
             case 0:
                 v = inflater.inflate(R.layout.home_list_item, parent, false);
                 holder = new ViewHolderHome(v);
-                Log.i(TAG, "Created Home Item Holder");
                 return holder;
 
             case 2:
                 v = inflater.inflate(R.layout.artist_list_item, parent, false);
                 holder = new ViewHolderArtist(v);
-                Log.i(TAG, "Created Artists Holder");
                 return holder;
 
             default:
@@ -104,20 +102,17 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         int viewType = getItemViewType(position);
-        Log.i(TAG,"Binding, viewType = " + String.valueOf(viewType));
         MenuItem item = items.get(position);
         switch (viewType){
             case 0:
                 ((ViewHolderHome) holder).textView.setText(item.getName());
                 ((ViewHolderHome) holder).imageView.setImageResource(((HomeScreenItem) item).getResourceId());
                 ((ViewHolderHome) holder).setListeners();
-                Log.i(TAG, "Done binding " + String.valueOf(position) + '\n' + '\n');
                 break;
 
             case 2:
                 ((ViewHolderArtist) holder).textView.setText(item.getName());
                 ((ViewHolderArtist) holder).setListeners();
-                Log.i(TAG, "Done binding " + String.valueOf(position) + '\n' + '\n');
                 break;
         }
     }

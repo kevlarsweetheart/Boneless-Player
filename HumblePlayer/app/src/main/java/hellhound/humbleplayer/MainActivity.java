@@ -1,6 +1,9 @@
 package hellhound.humbleplayer;
 
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -28,29 +31,34 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         state = new Stack<String>();
-
         db = new DatabaseHelper(getApplicationContext());
-        db.addArtist(new ArtistItem("Jack Black"));
-        db.addArtist(new ArtistItem("Mack Black"));
-        db.addArtist(new ArtistItem("Aack Black"));
-        db.addArtist(new ArtistItem("Rack Black"));
-        db.addArtist(new ArtistItem("Gack Black"));
-        db.addArtist(new ArtistItem("Uack Black"));
-        db.addArtist(new ArtistItem("Lack Black"));
-        db.addArtist(new ArtistItem("Lfck Black"));
-        db.addArtist(new ArtistItem("Lsck Black"));
-        db.addArtist(new ArtistItem("Luck Black"));
-        db.addArtist(new ArtistItem("Lrck Black"));
+        db.addArtist(new ArtistItem("Unknown"));
+        db.addArtist(new ArtistItem("Unknown1"));
+        db.addArtist(new ArtistItem("Unknown2"));
+        db.addArtist(new ArtistItem("Unknown3"));
+        db.addArtist(new ArtistItem("Unknown4"));
+        db.addArtist(new ArtistItem("Unknown5"));
+        db.addArtist(new ArtistItem("Unknown6"));
+        db.addArtist(new ArtistItem("Unknown7"));
+        db.addArtist(new ArtistItem("Unknown8"));
 
+
+        for (MenuItem artist : searchForArtists()){
+            db.addArtist((ArtistItem) artist);
+        }
+
+        ArrayList<MenuItem> artists = db.getAllArtists();
         setHomeItems();
         recyclerView = (RecyclerView) findViewById(R.id.rv);
         recyclerView.setHasFixedSize(false);
         layoutManager = new LinearLayoutManager(this);
+        layoutManager.setAutoMeasureEnabled(true);
         recyclerView.setLayoutManager(layoutManager);
 
         adapter = new HomeScreenAdapter(this, homeItems, db);
         recyclerView.setAdapter(adapter);
     }
+
 
     private void setHomeItems(){
         homeItems = new ArrayList<MenuItem>();
@@ -61,9 +69,47 @@ public class MainActivity extends AppCompatActivity {
         homeItems.add(new HomeScreenItem("Queue", R.drawable.background_queue));
     }
 
-    @Override
-    protected void onDestroy() {
-        db.onUpgrade(db.getReadableDatabase(), 1, 1);
-        super.onDestroy();
+
+    private ArrayList<MenuItem> searchForArtists(){
+        ArrayList<MenuItem> res = new ArrayList<>();
+
+        String selection = MediaStore.Audio.Media.IS_MUSIC + " != 0";
+        String[] projection = {
+                MediaStore.Audio.Media.TITLE,
+                MediaStore.Audio.Media.ARTIST,
+                MediaStore.Audio.Media._ID,
+                MediaStore.Audio.Media.ALBUM,
+                MediaStore.Audio.Media.DURATION,
+                MediaStore.Audio.Media.DATA};
+        Cursor cursor = null;
+
+        try {
+            Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+            cursor = getContentResolver().query(uri, projection, selection, null, null);
+            if( cursor != null){
+                cursor.moveToFirst();
+
+                while( !cursor.isAfterLast() ){
+                    String artist = cursor.getString(1);
+                    cursor.moveToNext();
+                    res.add(new ArtistItem(artist));
+                }
+
+            }
+
+            // print to see list of mp3 files
+            for( MenuItem artist : res) {
+                Log.i("TAG", artist.getName());
+            }
+
+        } catch (Exception e) {
+            Log.e("TAG", e.toString());
+        }finally{
+            if( cursor != null){
+                cursor.close();
+            }
+        }
+
+        return res;
     }
 }

@@ -115,8 +115,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 res.add(item);
                 c.moveToNext();
             }
+            c.close();
         }
-        c.close();
         db.close();
         return res;
     }
