@@ -40,12 +40,17 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         switch (type){
             case HOME:
                 return 0;
+
+            case ARTIST:
+                return 2;
         }
         return 0;
     }
 
 
+    /*--------------------------------------------------------------------------------------------*/
     /*------------------------------- Update data methods ----------------------------------------*/
+    /*--------------------------------------------------------------------------------------------*/
     public void updateItems(final ArrayList<MenuItem> newList){
         pendingUpdates.add(newList);
         if(pendingUpdates.size() > 1){
@@ -89,7 +94,9 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     }
 
 
+    /*--------------------------------------------------------------------------------------------*/
     /* ------------------------------ Create & bind views ----------------------------------------*/
+    /*--------------------------------------------------------------------------------------------*/
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -99,6 +106,11 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
             case 0:
                 holder = new ViewHolderHome(inflater.inflate(R.layout.home_item, parent, false));
                 ((ViewHolderHome) holder).setListeners();
+                return holder;
+
+            case 2:
+                holder = new ViewHolderArtist(inflater.inflate(R.layout.artist_item, parent, false));
+                ((ViewHolderArtist) holder).setListeners();
                 return holder;
         }
         return null;
@@ -110,9 +122,16 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
          switch (item.getType()){
              case HOME:
                  ((ViewHolderHome) holder).tv.setText(item.getName());
+
+             case ARTIST:
+                 ((ViewHolderArtist) holder).tv.setText(item.getName());
          }
     }
 
+
+    /*--------------------------------------------------------------------------------------------*/
+    /*----------------------------------- Home View Holder ---------------------------------------*/
+    /*--------------------------------------------------------------------------------------------*/
     public class ViewHolderHome extends RecyclerView.ViewHolder implements View.OnClickListener{
         CardView cv;
         TextView tv;
@@ -121,6 +140,32 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
             super(itemView);
             tv = (TextView) itemView.findViewById(R.id.home_text);
             cv = (CardView) itemView.findViewById(R.id.home_cv);
+        }
+
+        public void setListeners(){
+            cv.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View v) {
+            ArrayList<MenuItem> newItems = new ArrayList<>();
+            newItems.add(items.get(getAdapterPosition()));
+            updateItems(newItems);
+        }
+    }
+
+
+    /*--------------------------------------------------------------------------------------------*/
+    /*---------------------------------- Artist View Holder --------------------------------------*/
+    /*--------------------------------------------------------------------------------------------*/
+    public class ViewHolderArtist extends RecyclerView.ViewHolder implements View.OnClickListener{
+        CardView cv;
+        TextView tv;
+
+        public ViewHolderArtist(View itemView) {
+            super(itemView);
+            tv = (TextView) itemView.findViewById(R.id.artist_text);
+            cv = (CardView) itemView.findViewById(R.id.artist_cv);
         }
 
         public void setListeners(){
