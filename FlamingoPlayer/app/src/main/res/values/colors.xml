@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="controlBorder">#8205AC</color>
+    <color name="controlBackground">#eceae2</color>
+    <color name="progressRect">#b5b6d2</color>
+
+    <!-- Vibrant theme -->
+    <color name="clean">#DFDEC3</color>
+    <color name="sunshine">#465C8B</color>
+    <color name="vermillion">#93C178</color>
+    <color name="fresh">#F7EF6A</color>
+
+    <!-- Earthy and Fresh -->
+    <color name="herb">#626E60</color>
+    <color name="charcoal">#3C3C3C</color>
+    <color name="chili">#AF473C</color>
+    <color name="terracotta">#945D60</color>
+</resources>
