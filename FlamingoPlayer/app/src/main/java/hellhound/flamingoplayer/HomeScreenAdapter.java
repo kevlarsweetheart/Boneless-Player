@@ -148,8 +148,7 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
         @Override
         public void onClick(View v) {
-            ArrayList<MenuItem> newItems = new ArrayList<>();
-            newItems.add(items.get(getAdapterPosition()));
+            ArrayList<MenuItem> newItems = ((MainActivity) parent).db.getAllArtists();
             updateItems(newItems);
         }
     }

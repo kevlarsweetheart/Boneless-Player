@@ -1,6 +1,7 @@
 package hellhound.flamingoplayer;
 
 import android.database.Cursor;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
@@ -17,6 +18,7 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private RecyclerView.LayoutManager layoutManager;
     private HomeScreenAdapter adapter;
+    public DBHelper db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,19 +26,24 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         setHomeItems();
-        ArrayList<MenuItem> artists = searchForArtists();
+        db = new DBHelper(getApplicationContext());
+        for (ArtistItem item : searchForArtists()){
+            db.addArtist(item);
+        }
+
 
         recyclerView = (RecyclerView) findViewById(R.id.rv);
         layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
-        adapter = new HomeScreenAdapter(this, artists);
+        adapter = new HomeScreenAdapter(this, homeItems);
         recyclerView.setAdapter(adapter);
 
+        db.close();
     }
 
 
     private void setHomeItems(){
-        homeItems = new ArrayList<MenuItem>();
+        homeItems = new ArrayList<>();
         homeItems.add(new HomeScreenItem("Artists"));
         homeItems.add(new HomeScreenItem("Albums"));
         homeItems.add(new HomeScreenItem("Songs"));
@@ -48,8 +55,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private ArrayList<MenuItem> searchForArtists(){
-        ArrayList<MenuItem> res = new ArrayList<>();
+    private ArrayList<ArtistItem> searchForArtists(){
+        ArrayList<ArtistItem> res = new ArrayList<>();
 
         String selection = MediaStore.Audio.Media.IS_MUSIC + " != 0";
         String[] projection = {
