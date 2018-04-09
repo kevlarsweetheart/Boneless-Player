@@ -14,6 +14,7 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
+    private final static String TAG = "db_debug";
     private static ArrayList<MenuItem> homeItems;
     private RecyclerView recyclerView;
     private RecyclerView.LayoutManager layoutManager;
@@ -25,11 +26,14 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Log.i(TAG, "Creating db");
         setHomeItems();
         db = new DBHelper(getApplicationContext());
+        Log.i(TAG, "Created db");
         for (ArtistItem item : searchForArtists()){
             db.addArtist(item);
         }
+        Log.i(TAG, "Added artists");
 
 
         recyclerView = (RecyclerView) findViewById(R.id.rv);
@@ -37,7 +41,6 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(layoutManager);
         adapter = new HomeScreenAdapter(this, homeItems);
         recyclerView.setAdapter(adapter);
-
         db.close();
     }
 

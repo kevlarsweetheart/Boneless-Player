@@ -11,7 +11,7 @@ import java.util.ArrayList;
 
 public class DBHelper extends SQLiteOpenHelper {
 
-    private final static String TAG = "db debug";
+    private final static String TAG = "db_debug";
 
     private final static String DB_NAME = "flamingo.db";
     private final static int DATABASE_VERSION = 1;
@@ -27,6 +27,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         String createArtists = "CREATE TABLE " + TABLE_ARTISTS + "(" +
                 KEY_ARTIST_NAME + " TEXT NOT NULL)";
+        Log.i(TAG, "Created Artists table");
         db.execSQL(createArtists);
     }
 

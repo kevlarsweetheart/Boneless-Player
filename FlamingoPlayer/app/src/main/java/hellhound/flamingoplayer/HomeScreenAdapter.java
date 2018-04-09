@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,7 +20,7 @@ import android.os.Handler;
 
 public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    private static final String TAG = "Debugging";
+    private static final String TAG = "adapter_debug";
     private Context parent;
     private ArrayList<MenuItem> items;
     private Queue<ArrayList<MenuItem>> pendingUpdates = new ArrayDeque<>();
@@ -104,11 +105,13 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         RecyclerView.ViewHolder holder;
         switch (viewType){
             case 0:
+                Log.i(TAG, "Creating view holder for home items");
                 holder = new ViewHolderHome(inflater.inflate(R.layout.home_item, parent, false));
                 ((ViewHolderHome) holder).setListeners();
                 return holder;
 
             case 2:
+                Log.i(TAG, "Creating view holder for artist items");
                 holder = new ViewHolderArtist(inflater.inflate(R.layout.artist_item, parent, false));
                 ((ViewHolderArtist) holder).setListeners();
                 return holder;
@@ -121,10 +124,14 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         MenuItem item = items.get(position);
          switch (item.getType()){
              case HOME:
+                 Log.i(TAG, "Binding home item");
                  ((ViewHolderHome) holder).tv.setText(item.getName());
+                 break;
 
              case ARTIST:
+                 Log.i(TAG, "Binding artist item");
                  ((ViewHolderArtist) holder).tv.setText(item.getName());
+                 break;
          }
     }
 
@@ -148,7 +155,9 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
         @Override
         public void onClick(View v) {
+            Log.i(TAG, "Clicked button");
             ArrayList<MenuItem> newItems = ((MainActivity) parent).db.getAllArtists();
+            Log.i(TAG, "Got artists");
             updateItems(newItems);
         }
     }
