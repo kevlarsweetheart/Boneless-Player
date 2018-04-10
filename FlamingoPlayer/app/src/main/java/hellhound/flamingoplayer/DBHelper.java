@@ -11,6 +11,7 @@ import java.util.ArrayList;
 
 public class DBHelper extends SQLiteOpenHelper {
 
+    private static DBHelper INSTANCE;
     private final static String TAG = "db_debug";
 
     private final static String DB_NAME = "flamingo.db";
@@ -19,7 +20,16 @@ public class DBHelper extends SQLiteOpenHelper {
     private final static String TABLE_ARTISTS = "artists";
     private final static String KEY_ARTIST_NAME = "artists_name";
 
-    public DBHelper(Context context) {
+
+    public static synchronized DBHelper getInstance(Context context){
+        if (INSTANCE == null){
+            INSTANCE = new DBHelper(context.getApplicationContext());
+        }
+        return INSTANCE;
+    }
+
+
+    private DBHelper(Context context) {
         super(context, DB_NAME, null, DATABASE_VERSION);
     }
 

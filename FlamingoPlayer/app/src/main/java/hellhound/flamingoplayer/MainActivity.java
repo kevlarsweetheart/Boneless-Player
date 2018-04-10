@@ -28,12 +28,7 @@ public class MainActivity extends AppCompatActivity {
 
         Log.i(TAG, "Creating db");
         setHomeItems();
-        db = new DBHelper(getApplicationContext());
-        Log.i(TAG, "Created db");
-        for (ArtistItem item : searchForArtists()){
-            db.addArtist(item);
-        }
-        Log.i(TAG, "Added artists");
+        db = DBHelper.getInstance(getApplicationContext());
 
 
         recyclerView = (RecyclerView) findViewById(R.id.rv);
@@ -55,49 +50,5 @@ public class MainActivity extends AppCompatActivity {
         homeItems.add(new HomeScreenItem("Queue"));
         homeItems.add(new HomeScreenItem("Queue"));
         homeItems.add(new HomeScreenItem("Queue"));
-    }
-
-
-    private ArrayList<ArtistItem> searchForArtists(){
-        ArrayList<ArtistItem> res = new ArrayList<>();
-
-        String selection = MediaStore.Audio.Media.IS_MUSIC + " != 0";
-        String[] projection = {
-                MediaStore.Audio.Media.TITLE,
-                MediaStore.Audio.Media.ARTIST,
-                MediaStore.Audio.Media._ID,
-                MediaStore.Audio.Media.ALBUM,
-                MediaStore.Audio.Media.DURATION,
-                MediaStore.Audio.Media.DATA};
-        Cursor cursor = null;
-
-        try {
-            Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-            cursor = getContentResolver().query(uri, projection, selection, null, null);
-            if( cursor != null){
-                cursor.moveToFirst();
-
-                while( !cursor.isAfterLast() ){
-                    String artist = cursor.getString(1);
-                    cursor.moveToNext();
-                    res.add(new ArtistItem(artist));
-                }
-
-            }
-
-            // print to see list of mp3 files
-            for( MenuItem artist : res) {
-                Log.i("TAG", artist.getName());
-            }
-
-        } catch (Exception e) {
-            Log.e("TAG", e.toString());
-        }finally{
-            if( cursor != null){
-                cursor.close();
-            }
-        }
-
-        return res;
     }
 }
