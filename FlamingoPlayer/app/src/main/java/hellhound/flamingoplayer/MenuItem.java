@@ -2,10 +2,11 @@ package hellhound.flamingoplayer;
 
 public class MenuItem {
     private String name;
-    public enum TYPES {HOME, SONG, ALBUM, ARTIST, PATH}
+    public enum TYPES {HOME, TRACK, ALBUM, ARTIST, PATH, PLAY_ALL}
     protected TYPES type;
     private static int cnt = -2147483648;
     private int itemId;
+    protected static final String DEFAULT_NAME = "DEFAULT";
 
     MenuItem(String name){
         this.name = name;

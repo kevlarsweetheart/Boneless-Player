@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Flamingo Player</string>
+    <string name="view_tracks">View tracks</string>
+    <string name="play_shuffled">Play shuffled</string>
 </resources>

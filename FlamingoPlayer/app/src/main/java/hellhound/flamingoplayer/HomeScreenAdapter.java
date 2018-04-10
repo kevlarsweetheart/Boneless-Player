@@ -43,7 +43,10 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                 return 0;
 
             case ARTIST:
-                return 2;
+                return 3;
+
+            case PLAY_ALL:
+                return 5;
         }
         return 0;
     }
@@ -110,11 +113,17 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                 ((ViewHolderHome) holder).setListeners();
                 return holder;
 
-            case 2:
+            case 3:
                 Log.i(TAG, "Creating view holder for artist items");
                 holder = new ViewHolderArtist(inflater.inflate(R.layout.artist_item, parent, false));
                 ((ViewHolderArtist) holder).setListeners();
                 return holder;
+
+            case 5:
+                Log.i(TAG, "Creating view holder for play_all items");
+                holder = new ViewHolderPlayAll(inflater.inflate(R.layout.play_all_item, parent, false));
+                return holder;
+
         }
         return null;
     }
@@ -131,6 +140,9 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
              case ARTIST:
                  Log.i(TAG, "Binding artist item");
                  ((ViewHolderArtist) holder).tv.setText(item.getName());
+                 break;
+
+             case PLAY_ALL:
                  break;
          }
     }
@@ -169,11 +181,17 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     public class ViewHolderArtist extends RecyclerView.ViewHolder implements View.OnClickListener{
         CardView cv;
         TextView tv;
+        TextView songsCnt;
+        TextView albumsCnt;
+        TextView artistCharts;
 
         public ViewHolderArtist(View itemView) {
             super(itemView);
             tv = (TextView) itemView.findViewById(R.id.artist_text);
             cv = (CardView) itemView.findViewById(R.id.artist_cv);
+            songsCnt = (TextView) itemView.findViewById(R.id.songs_count);
+            albumsCnt = (TextView) itemView.findViewById(R.id.albums_count);
+            artistCharts = (TextView) itemView.findViewById(R.id.artist_charts);
         }
 
         public void setListeners(){
@@ -184,7 +202,22 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         public void onClick(View v) {
             ArrayList<MenuItem> newItems = new ArrayList<>();
             newItems.add(items.get(getAdapterPosition()));
+            newItems.add(new PlayAllItem());
+            songsCnt.setVisibility(View.VISIBLE);
+            albumsCnt.setVisibility(View.VISIBLE);
+            artistCharts.setVisibility(View.VISIBLE);
             updateItems(newItems);
+        }
+    }
+
+    public class ViewHolderPlayAll extends RecyclerView.ViewHolder{
+        TextView viewAll;
+        TextView playShuffle;
+
+        public ViewHolderPlayAll(View itemView) {
+            super(itemView);
+            this.viewAll = (TextView) itemView.findViewById(R.id.view_tacks);
+            this.playShuffle = (TextView) itemView.findViewById(R.id.play_shuffled);
         }
     }
 }
