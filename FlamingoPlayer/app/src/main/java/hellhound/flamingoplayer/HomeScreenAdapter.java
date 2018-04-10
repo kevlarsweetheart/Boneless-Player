@@ -143,6 +143,7 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                  break;
 
              case PLAY_ALL:
+                 Log.i(TAG, "Binding playall item");
                  break;
          }
     }
@@ -167,10 +168,12 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
         @Override
         public void onClick(View v) {
-            Log.i(TAG, "Clicked button");
-            ArrayList<MenuItem> newItems = ((MainActivity) parent).db.getAllArtists();
-            Log.i(TAG, "Got artists");
-            updateItems(newItems);
+            if (items.get(getAdapterPosition()).getName().equals("Artists")){
+                Log.i(TAG, "Clicked button");
+                ArrayList<MenuItem> newItems = ((MainActivity) parent).db.getAllArtists();
+                Log.i(TAG, "Got artists");
+                updateItems(newItems);
+            }
         }
     }
 
@@ -184,6 +187,7 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         TextView songsCnt;
         TextView albumsCnt;
         TextView artistCharts;
+        boolean extended = false;
 
         public ViewHolderArtist(View itemView) {
             super(itemView);
@@ -200,16 +204,41 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
         @Override
         public void onClick(View v) {
-            ArrayList<MenuItem> newItems = new ArrayList<>();
-            newItems.add(items.get(getAdapterPosition()));
-            newItems.add(new PlayAllItem());
-            songsCnt.setVisibility(View.VISIBLE);
-            albumsCnt.setVisibility(View.VISIBLE);
-            artistCharts.setVisibility(View.VISIBLE);
+            ArrayList<MenuItem> newItems;
+            if (!extended){
+                newItems = new ArrayList<>();
+                newItems.add(items.get(getAdapterPosition()));
+                newItems.add(new PlayAllItem());
+                songsCnt.setVisibility(View.VISIBLE);
+                albumsCnt.setVisibility(View.VISIBLE);
+                artistCharts.setVisibility(View.VISIBLE);
+                extended = true;
+            }
+            else{
+                newItems = ((MainActivity) parent).db.getAllArtists();
+                MenuItem currItem = items.get(getAdapterPosition());
+                for (int i = 0; i < newItems.size(); i++){
+                    if (currItem.getType() == newItems.get(i).getType() &&
+                            currItem.getName().equals(newItems.get(i).getName())){
+                        newItems.set(i, currItem);
+                        break;
+                    }
+                }
+                songsCnt.setVisibility(View.GONE);
+                albumsCnt.setVisibility(View.GONE);
+                artistCharts.setVisibility(View.GONE);
+                extended = false;
+
+            }
+            Log.i(TAG, String.valueOf(extended));
             updateItems(newItems);
         }
     }
 
+
+    /*--------------------------------------------------------------------------------------------*/
+    /*---------------------------------- Play All View Holder ------------------------------------*/
+    /*--------------------------------------------------------------------------------------------*/
     public class ViewHolderPlayAll extends RecyclerView.ViewHolder{
         TextView viewAll;
         TextView playShuffle;
