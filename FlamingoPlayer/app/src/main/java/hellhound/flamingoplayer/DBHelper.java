@@ -169,7 +169,7 @@ public class DBHelper extends SQLiteOpenHelper {
             values.put(KEY_ALBUM_NAME, album.getName());
             values.put(KEY_ARTIST_ID, album.getArtistId());
 
-            album_id = db.insert(TABLE_ARTISTS, null, values);
+            album_id = db.insert(TABLE_ALBUMS, null, values);
             Log.i(TAG, "Put album, rowid = " + String.valueOf(album_id));
             db.close();
         }
