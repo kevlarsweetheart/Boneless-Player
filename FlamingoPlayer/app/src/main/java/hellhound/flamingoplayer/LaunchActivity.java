@@ -82,18 +82,7 @@ public class LaunchActivity extends AppCompatActivity {
 
 
     private void updateDB(){
-
         DBHelper db = DBHelper.getInstance(getApplicationContext());
-        Log.i(TAG, "Created db");
-        for (ArtistItem item : searchForArtists()){
-            db.addArtist(item);
-        }
-        Log.i(TAG, "Added artists");
-        db.close();
-    }
-
-    private ArrayList<ArtistItem> searchForArtists(){
-        ArrayList<ArtistItem> res = new ArrayList<>();
 
         String selection = MediaStore.Audio.Media.IS_MUSIC + " != 0";
         String[] projection = {
@@ -112,16 +101,17 @@ public class LaunchActivity extends AppCompatActivity {
                 cursor.moveToFirst();
 
                 while( !cursor.isAfterLast() ){
-                    String artist = cursor.getString(1);
+                    String artistName = cursor.getString(1);
+                    String albumName = cursor.getString(3);
+                    ArtistItem artist = new ArtistItem(artistName);
+                    long artistId = db.addArtist(artist);
+                    AlbumItem album = new AlbumItem(albumName);
+                    album.setArtistId(artistId);
+                    db.addAlbum(album);
+
                     cursor.moveToNext();
-                    res.add(new ArtistItem(artist));
                 }
 
-            }
-
-            // print to see list of mp3 files
-            for( MenuItem artist : res) {
-                Log.i("TAG", artist.getName());
             }
 
         } catch (Exception e) {
@@ -131,7 +121,7 @@ public class LaunchActivity extends AppCompatActivity {
                 cursor.close();
             }
         }
+        db.close();
 
-        return res;
     }
 }
