@@ -24,10 +24,11 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     private Context parent;
     private ArrayList<MenuItem> items;
     private Queue<ArrayList<MenuItem>> pendingUpdates = new ArrayDeque<>();
+    public enum ACTIONS {NEXT, BACK}
 
     public HomeScreenAdapter(Context parent, ArrayList<MenuItem> items) {
         this.parent = parent;
-        this.items = items;
+        this.items = new ArrayList<>(items);
     }
 
     @Override
@@ -168,12 +169,7 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
         @Override
         public void onClick(View v) {
-            if (items.get(getAdapterPosition()).getName().equals("Artists")){
-                Log.i(TAG, "Clicked button");
-                ArrayList<MenuItem> newItems = ((MainActivity) parent).db.getAllArtists();
-                Log.i(TAG, "Got artists");
-                updateItems(newItems);
-            }
+            handleClicks(getAdapterPosition(), ACTIONS.NEXT);
         }
     }
 
@@ -247,6 +243,58 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
             super(itemView);
             this.viewAll = (TextView) itemView.findViewById(R.id.view_tacks);
             this.playShuffle = (TextView) itemView.findViewById(R.id.play_shuffled);
+        }
+    }
+
+
+
+
+    /*--------------------------------------------------------------------------------------------*/
+    /*------------------------------- Change viewed items methods --------------------------------*/
+    /*--------------------------------------------------------------------------------------------*/
+
+    public void handleClicks(int viewPosition, ACTIONS action){
+        MainActivity.STATES currState = ((MainActivity) parent).getState();
+        ArrayList<MenuItem> newItems;
+        switch (currState){
+            case HOME:
+                if (action == ACTIONS.NEXT){
+                    switch (viewPosition){
+                        case 0:                     //All artists
+                            ((MainActivity) parent).changeStateNext(MainActivity.STATES.ARTISTS);
+                            newItems = ((MainActivity) parent).db.getAllArtists();
+                            updateItems(newItems);
+                            break;
+
+                        case 1:                     //All albums
+                            ((MainActivity) parent).changeStateNext(MainActivity.STATES.ALBUMS);
+                            newItems = ((MainActivity) parent).db.getAllAlbums();
+                            updateItems(newItems);
+                            break;
+                    }
+                }
+
+                break;
+
+            case ARTISTS:
+                if (action == ACTIONS.BACK) {
+                    ((MainActivity) parent).changeStateBack();
+                    newItems = ((MainActivity) parent).getHomeItems();
+                    updateItems(newItems);
+                }
+                break;
+
+            case ALBUMS:
+                break;
+
+            case TRACKS:
+                break;
+
+            case PLAYLISTS:
+                break;
+
+            case CHARTS:
+                break;
         }
     }
 }

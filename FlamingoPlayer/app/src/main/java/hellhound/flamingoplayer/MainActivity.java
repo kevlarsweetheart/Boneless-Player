@@ -11,8 +11,9 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.Stack;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements TopHeader.TopHeaderListener{
 
     private final static String TAG = "db_debug";
     private static ArrayList<MenuItem> homeItems;
@@ -20,6 +21,9 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView.LayoutManager layoutManager;
     private HomeScreenAdapter adapter;
     public DBHelper db;
+    public enum STATES {HOME, ARTISTS, ALBUMS, TRACKS, PLAYLISTS, CHARTS}
+    private Stack<STATES> state;
+    private TopHeader topHeader;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +31,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         setHomeItems();
+        topHeader = (TopHeader) getSupportFragmentManager().findFragmentById(R.id.fragment);
+        state = new Stack<>();
+        state.push(STATES.HOME);
         db = DBHelper.getInstance(getApplicationContext());
 
 
@@ -46,8 +53,40 @@ public class MainActivity extends AppCompatActivity {
         homeItems.add(new HomeScreenItem("Songs"));
         homeItems.add(new HomeScreenItem("Playlists"));
         homeItems.add(new HomeScreenItem("Queue"));
-        homeItems.add(new HomeScreenItem("Queue"));
-        homeItems.add(new HomeScreenItem("Queue"));
-        homeItems.add(new HomeScreenItem("Queue"));
+    }
+
+    public  ArrayList<MenuItem> getHomeItems(){
+        return homeItems;
+    }
+
+
+    /*--------------------------------------------------------------------------------------------*/
+    /*------------------------------- Methods for state managing ---------------------------------*/
+    /*--------------------------------------------------------------------------------------------*/
+    public STATES getState(){
+        return state.peek();
+    }
+
+    public STATES changeStateBack(){
+        STATES oldState = getState();
+        if (oldState != STATES.HOME){
+            oldState = state.pop();
+        }
+
+        STATES currState = getState();
+        topHeader.switchBackButton(currState);
+        topHeader.changeTitleText(currState);
+        return oldState;
+    }
+
+    public void changeStateNext(STATES newState){
+        state.push(newState);
+        topHeader.switchBackButton(newState);
+        topHeader.changeTitleText(newState);
+    }
+
+    @Override
+    public void backButtonClicked() {
+        adapter.handleClicks(1, HomeScreenAdapter.ACTIONS.BACK);
     }
 }
