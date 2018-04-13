@@ -207,7 +207,7 @@ public class DBHelper extends SQLiteOpenHelper {
         String query = "SELECT * FROM " + TABLE_ALBUMS +
                 " WHERE " + KEY_ARTIST_ID + " IN " +
                 "( SELECT " + KEY_ARTIST_ID + " FROM " + TABLE_ARTISTS +
-                " WHERE " + KEY_ALBUM_NAME + " = \"" + artist.getName() + "\");";
+                " WHERE " + KEY_ARTIST_NAME + " = \"" + artist.getName() + "\");";
         Cursor c = db.rawQuery(query, null);
 
         if(c != null){

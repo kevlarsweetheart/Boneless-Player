@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.MultiAutoCompleteTextView;
 import android.widget.TextView;
 
@@ -42,6 +43,9 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         switch (type){
             case HOME:
                 return 0;
+
+            case ALBUM:
+                return 2;
 
             case ARTIST:
                 return 3;
@@ -114,6 +118,12 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                 ((ViewHolderHome) holder).setListeners();
                 return holder;
 
+            case 2:
+                Log.i(TAG, "Creating view holder for album items");
+                holder = new ViewHolderAlbum(inflater.inflate(R.layout.album_item, parent, false));
+                ((ViewHolderAlbum) holder).setListeners();
+                return holder;
+
             case 3:
                 Log.i(TAG, "Creating view holder for artist items");
                 holder = new ViewHolderArtist(inflater.inflate(R.layout.artist_item, parent, false));
@@ -136,6 +146,17 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
              case HOME:
                  Log.i(TAG, "Binding home item");
                  ((ViewHolderHome) holder).tv.setText(item.getName());
+                 break;
+
+             case ALBUM:
+                 Log.i(TAG, "Binding album item");
+                 ((ViewHolderAlbum) holder).albumName.setText(item.getName());
+                 if (((AlbumItem)item).getReleaseYear() != 0){
+                     String year = String.valueOf(((AlbumItem)item).getReleaseYear());
+                     ((ViewHolderAlbum) holder).releaseYear.setText(year);
+                 } else {
+                     ((ViewHolderAlbum) holder).releaseYear.setText("");
+                 }
                  break;
 
              case ARTIST:
@@ -182,8 +203,6 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         TextView tv;
         TextView songsCnt;
         TextView albumsCnt;
-        TextView artistCharts;
-        boolean extended = false;
 
         public ViewHolderArtist(View itemView) {
             super(itemView);
@@ -191,7 +210,6 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
             cv = (CardView) itemView.findViewById(R.id.artist_cv);
             songsCnt = (TextView) itemView.findViewById(R.id.songs_count);
             albumsCnt = (TextView) itemView.findViewById(R.id.albums_count);
-            artistCharts = (TextView) itemView.findViewById(R.id.artist_charts);
         }
 
         public void setListeners(){
@@ -201,16 +219,21 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         @Override
         public void onClick(View v) {
             ArrayList<MenuItem> newItems;
+            int position = getAdapterPosition();
+            boolean extended = ((ArtistItem) items.get(position)).extended;
             if (!extended){
+                /*
                 newItems = new ArrayList<>();
                 newItems.add(items.get(getAdapterPosition()));
-                newItems.add(new PlayAllItem());
+                newItems.add(new PlayAllItem());*/
                 songsCnt.setVisibility(View.VISIBLE);
                 albumsCnt.setVisibility(View.VISIBLE);
-                artistCharts.setVisibility(View.VISIBLE);
-                extended = true;
+                ((ArtistItem) items.get(position)).extended= true;
+                tv.setSelected(true);
+                handleClicks(position, ACTIONS.NEXT);
             }
             else{
+                /*
                 newItems = ((MainActivity) parent).db.getAllArtists();
                 MenuItem currItem = items.get(getAdapterPosition());
                 for (int i = 0; i < newItems.size(); i++){
@@ -219,15 +242,44 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                         newItems.set(i, currItem);
                         break;
                     }
-                }
+                }*/
                 songsCnt.setVisibility(View.GONE);
                 albumsCnt.setVisibility(View.GONE);
-                artistCharts.setVisibility(View.GONE);
-                extended = false;
+                ((ArtistItem) items.get(position)).extended = false;
+                tv.setSelected(false);
+                handleClicks(position, ACTIONS.BACK);
 
             }
-            Log.i(TAG, String.valueOf(extended));
-            updateItems(newItems);
+        }
+    }
+
+
+    /*--------------------------------------------------------------------------------------------*/
+    /*----------------------------------- Album View Holder --------------------------------------*/
+    /*--------------------------------------------------------------------------------------------*/
+    public class ViewHolderAlbum extends RecyclerView.ViewHolder implements View.OnClickListener{
+        TextView albumName;
+        TextView songsNumber;
+        TextView releaseYear;
+        ImageView cover;
+        CardView cv;
+
+        public ViewHolderAlbum(View itemView) {
+            super(itemView);
+            this.albumName = (TextView) itemView.findViewById(R.id.album_name);
+            this.songsNumber = (TextView) itemView.findViewById(R.id.songs_count);
+            this.releaseYear = (TextView) itemView.findViewById(R.id.release_year);
+            this.cover = (ImageView) itemView.findViewById(R.id.album_image);
+            this.cv = (CardView) itemView.findViewById(R.id.album_cv);
+        }
+
+        public void setListeners(){
+            cv.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View v) {
+
         }
     }
 
@@ -269,6 +321,10 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                         case 1:                     //All albums
                             ((MainActivity) parent).changeStateNext(MainActivity.STATES.ALBUMS);
                             newItems = ((MainActivity) parent).db.getAllAlbums();
+                            Log.i(TAG, "Got albums");
+                            for(MenuItem item : newItems){
+                                Log.i(TAG, item.getName() + ": " + String.valueOf(((AlbumItem) item).getReleaseYear()));
+                            }
                             updateItems(newItems);
                             break;
                     }
@@ -281,10 +337,47 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                     ((MainActivity) parent).changeStateBack();
                     newItems = ((MainActivity) parent).getHomeItems();
                     updateItems(newItems);
+                } else {
+                    newItems = new ArrayList<>();
+                    ((MainActivity) parent).changeStateNext(MainActivity.STATES.ALBUMS);
+                    MenuItem item = items.get(viewPosition);
+                    newItems.add(item);
+                    newItems.add(new PlayAllItem());
+                    newItems.addAll(((MainActivity) parent).db.getAlbumsOfArtist((ArtistItem) item));
+                    updateItems(newItems);
                 }
                 break;
 
             case ALBUMS:
+                if (action == ACTIONS.BACK){
+                    ((MainActivity) parent).changeStateBack();
+                    MainActivity.STATES newState = ((MainActivity) parent).getState();
+                            Log.i(TAG, "Clicked back on albums");
+
+                    switch (newState){
+                        case HOME:
+                            newItems = ((MainActivity) parent).getHomeItems();
+                            updateItems(newItems);
+                            break;
+
+                        case ARTISTS:
+                            MenuItem currItem = items.get(viewPosition);
+                            newItems = ((MainActivity) parent).db.getAllArtists();
+                            for (int i = 0; i < newItems.size(); i++){
+                                if (currItem.getType() == newItems.get(i).getType() &&
+                                        currItem.getName().equals(newItems.get(i).getName())){
+                                    newItems.set(i, currItem);
+                                    break;
+                                }
+                            }
+                            updateItems(newItems);
+                            break;
+
+                        default:
+                            ((MainActivity) parent).changeStateNext(MainActivity.STATES.ALBUMS);
+                            break;
+                    }
+                }
                 break;
 
             case TRACKS:

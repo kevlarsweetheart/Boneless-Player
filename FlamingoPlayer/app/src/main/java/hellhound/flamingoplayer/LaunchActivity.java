@@ -15,7 +15,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.ImageView;
-
+import com.bumptech.glide.Glide;
 import java.util.ArrayList;
 
 public class LaunchActivity extends AppCompatActivity {
@@ -28,6 +28,9 @@ public class LaunchActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_launch);
+        ImageView icon = (ImageView) findViewById(R.id.launch_icon);
+
+        GlideApp.with(getApplicationContext()).load(R.mipmap.flamingo_launcher_rounded).into(icon);
 
         if((ContextCompat.checkSelfPermission(LaunchActivity.this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)){
@@ -91,7 +94,8 @@ public class LaunchActivity extends AppCompatActivity {
                 MediaStore.Audio.Media._ID,
                 MediaStore.Audio.Media.ALBUM,
                 MediaStore.Audio.Media.DURATION,
-                MediaStore.Audio.Media.DATA};
+                MediaStore.Audio.Media.DATA,
+                MediaStore.Audio.Media.YEAR};
         Cursor cursor = null;
 
         try {
@@ -103,10 +107,12 @@ public class LaunchActivity extends AppCompatActivity {
                 while( !cursor.isAfterLast() ){
                     String artistName = cursor.getString(1);
                     String albumName = cursor.getString(3);
+                    int albumYear = cursor.getInt(6);
                     ArtistItem artist = new ArtistItem(artistName);
                     long artistId = db.addArtist(artist);
                     AlbumItem album = new AlbumItem(albumName);
                     album.setArtistId(artistId);
+                    album.setReleaseYear(albumYear);
                     db.addAlbum(album);
 
                     cursor.moveToNext();
