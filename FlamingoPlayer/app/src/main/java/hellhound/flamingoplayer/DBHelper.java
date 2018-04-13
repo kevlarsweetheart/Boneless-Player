@@ -25,6 +25,7 @@ public class DBHelper extends SQLiteOpenHelper {
     private final static String KEY_ALBUM_ID = "album_id";
     private final static String KEY_ALBUM_NAME = "album_name";
     private final static String KEY_COVER_ID = "cover_art_id";
+    private final static String KEY_RELEASE_YEAR = "release_year";
 
 
     public static synchronized DBHelper getInstance(Context context){
@@ -49,6 +50,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 KEY_ALBUM_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 KEY_ALBUM_NAME + " TEXT NOT NULL, " +
                 KEY_ARTIST_ID + " INTEGER, " +
+                KEY_RELEASE_YEAR + " INTEGER, " +
                 "FOREIGN KEY (" + KEY_ARTIST_ID + ") REFERENCES " + TABLE_ARTISTS + "(" + KEY_ARTIST_ID +"));";
 
 
@@ -168,6 +170,7 @@ public class DBHelper extends SQLiteOpenHelper {
             ContentValues values = new ContentValues();
             values.put(KEY_ALBUM_NAME, album.getName());
             values.put(KEY_ARTIST_ID, album.getArtistId());
+            values.put(KEY_RELEASE_YEAR, album.getReleaseYear());
 
             album_id = db.insert(TABLE_ALBUMS, null, values);
             Log.i(TAG, "Put album, rowid = " + String.valueOf(album_id));
@@ -214,10 +217,12 @@ public class DBHelper extends SQLiteOpenHelper {
             c.moveToFirst();
             while (!c.isAfterLast()) {
                 String name = c.getString(c.getColumnIndex(KEY_ALBUM_NAME));
+                int year = c.getInt(c.getColumnIndex(KEY_RELEASE_YEAR));
                 long artist_id = c.getLong(c.getColumnIndex(KEY_ARTIST_ID));
                 Log.i(TAG, "Added " + name);
                 MenuItem item = new AlbumItem(name);
                 ((AlbumItem) item).setArtistId(artist_id);
+                ((AlbumItem) item).setReleaseYear(year);
                 res.add(item);
                 c.moveToNext();
             }
@@ -239,10 +244,12 @@ public class DBHelper extends SQLiteOpenHelper {
             c.moveToFirst();
             while (!c.isAfterLast()) {
                 String name = c.getString(c.getColumnIndex(KEY_ALBUM_NAME));
+                int year = c.getInt(c.getColumnIndex(KEY_RELEASE_YEAR));
                 long artist_id = c.getLong(c.getColumnIndex(KEY_ARTIST_ID));
                 Log.i(TAG, "Added " + name);
                 MenuItem item = new AlbumItem(name);
                 ((AlbumItem) item).setArtistId(artist_id);
+                ((AlbumItem) item).setReleaseYear(year);
                 res.add(item);
                 c.moveToNext();
             }

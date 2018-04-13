@@ -222,10 +222,6 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
             int position = getAdapterPosition();
             boolean extended = ((ArtistItem) items.get(position)).extended;
             if (!extended){
-                /*
-                newItems = new ArrayList<>();
-                newItems.add(items.get(getAdapterPosition()));
-                newItems.add(new PlayAllItem());*/
                 songsCnt.setVisibility(View.VISIBLE);
                 albumsCnt.setVisibility(View.VISIBLE);
                 ((ArtistItem) items.get(position)).extended= true;
@@ -233,16 +229,6 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                 handleClicks(position, ACTIONS.NEXT);
             }
             else{
-                /*
-                newItems = ((MainActivity) parent).db.getAllArtists();
-                MenuItem currItem = items.get(getAdapterPosition());
-                for (int i = 0; i < newItems.size(); i++){
-                    if (currItem.getType() == newItems.get(i).getType() &&
-                            currItem.getName().equals(newItems.get(i).getName())){
-                        newItems.set(i, currItem);
-                        break;
-                    }
-                }*/
                 songsCnt.setVisibility(View.GONE);
                 albumsCnt.setVisibility(View.GONE);
                 ((ArtistItem) items.get(position)).extended = false;
@@ -320,6 +306,7 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
                         case 1:                     //All albums
                             ((MainActivity) parent).changeStateNext(MainActivity.STATES.ALBUMS);
+                            Log.i(TAG, "Fetching albums");
                             newItems = ((MainActivity) parent).db.getAllAlbums();
                             Log.i(TAG, "Got albums");
                             for(MenuItem item : newItems){

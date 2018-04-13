@@ -108,6 +108,7 @@ public class LaunchActivity extends AppCompatActivity {
                     String artistName = cursor.getString(1);
                     String albumName = cursor.getString(3);
                     int albumYear = cursor.getInt(6);
+                    Log.i(TAG, String.valueOf(albumYear));
                     ArtistItem artist = new ArtistItem(artistName);
                     long artistId = db.addArtist(artist);
                     AlbumItem album = new AlbumItem(albumName);
