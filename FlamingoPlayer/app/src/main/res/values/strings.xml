@@ -2,4 +2,6 @@
     <string name="app_name">Flamingo Player</string>
     <string name="view_tracks">View tracks</string>
     <string name="play_shuffled">Play shuffled</string>
+    <string name="songs_cnt">Songs: %1$d</string>
+    <string name="albums_cnt">Albums: %1$d</string>
 </resources>

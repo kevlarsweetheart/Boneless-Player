@@ -1,6 +1,7 @@
 package hellhound.flamingoplayer;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.support.annotation.NonNull;
 import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.CardView;
@@ -142,6 +143,7 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         MenuItem item = items.get(position);
+        Resources res = ((MainActivity) parent).getResources();
          switch (item.getType()){
              case HOME:
                  Log.i(TAG, "Binding home item");
@@ -162,6 +164,9 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
              case ARTIST:
                  Log.i(TAG, "Binding artist item");
                  ((ViewHolderArtist) holder).tv.setText(item.getName());
+                 String albumsCnt = String.format(res.getString(R.string.albums_cnt),
+                         ((ArtistItem) item).getAlbumsCnt());
+                 ((ViewHolderArtist) holder).albumsCnt.setText(albumsCnt);
                  break;
 
              case PLAY_ALL:
@@ -301,6 +306,9 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                         case 0:                     //All artists
                             ((MainActivity) parent).changeStateNext(MainActivity.STATES.ARTISTS);
                             newItems = ((MainActivity) parent).db.getAllArtists();
+                            for(MenuItem item : newItems){
+                                ((ArtistItem) item).setAlbumsCnt(((MainActivity) parent).db.getAlbumsCount((ArtistItem) item));
+                            }
                             updateItems(newItems);
                             break;
 
@@ -350,6 +358,9 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                         case ARTISTS:
                             MenuItem currItem = items.get(viewPosition);
                             newItems = ((MainActivity) parent).db.getAllArtists();
+                            for(MenuItem item : newItems){
+                                ((ArtistItem) item).setAlbumsCnt(((MainActivity) parent).db.getAlbumsCount((ArtistItem) item));
+                            }
                             for (int i = 0; i < newItems.size(); i++){
                                 if (currItem.getType() == newItems.get(i).getType() &&
                                         currItem.getName().equals(newItems.get(i).getName())){

@@ -258,4 +258,30 @@ public class DBHelper extends SQLiteOpenHelper {
         db.close();
         return res;
     }
+
+    public int getAlbumCount(){
+        return getAlbumsCount(null);
+    }
+
+    public int getAlbumsCount(ArtistItem artist){
+        int result = -1;
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT COUNT(" + KEY_ALBUM_NAME + ") FROM " + TABLE_ALBUMS;
+
+        if (artist != null){
+            query += " WHERE "+ KEY_ARTIST_ID + " IN " +
+                    "( SELECT " + KEY_ARTIST_ID + " FROM " + TABLE_ARTISTS +
+                    " WHERE " + KEY_ARTIST_NAME + " = \"" + artist.getName() + "\");";
+        }
+
+        Cursor c = db.rawQuery(query, null);
+
+        if(c != null){
+            c.moveToFirst();
+            result = c.getInt(0);
+            c.close();
+        }
+        db.close();
+        return result;
+    }
 }

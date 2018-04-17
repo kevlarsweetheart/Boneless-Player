@@ -4,8 +4,10 @@ import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -16,6 +18,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.ImageView;
 import com.bumptech.glide.Glide;
+
+import java.io.File;
 import java.util.ArrayList;
 
 public class LaunchActivity extends AppCompatActivity {
@@ -31,7 +35,7 @@ public class LaunchActivity extends AppCompatActivity {
         ImageView icon = (ImageView) findViewById(R.id.launch_icon);
 
         GlideApp.with(getApplicationContext()).load(R.mipmap.flamingo_launcher_rounded).into(icon);
-
+        createPicsFolder();
         if((ContextCompat.checkSelfPermission(LaunchActivity.this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)){
             Log.i(TAG, "Permission granted");
@@ -130,5 +134,19 @@ public class LaunchActivity extends AppCompatActivity {
         }
         db.close();
 
+    }
+
+
+    private boolean createPicsFolder(){
+        boolean res = false;
+        File imageRoot = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES), getResources().getString(R.string.app_name));
+        if(!imageRoot.exists()){
+            res = imageRoot.mkdirs();
+            Log.i(TAG, "Created directory");
+        } else {
+            Log.i(TAG, "Directory already exists");
+        }
+        return res;
     }
 }
