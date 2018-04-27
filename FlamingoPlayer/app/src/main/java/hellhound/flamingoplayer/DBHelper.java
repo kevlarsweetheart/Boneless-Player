@@ -27,6 +27,9 @@ public class DBHelper extends SQLiteOpenHelper {
     private final static String KEY_COVER_ID = "cover_art_id";
     private final static String KEY_RELEASE_YEAR = "release_year";
 
+    private final static String TABLE_COVER_ARTS = "cover_arts";
+    private final static String KEY_COVER_ART_PATH = "cover_art_path";
+
 
     public static synchronized DBHelper getInstance(Context context){
         if (INSTANCE == null){
@@ -50,13 +53,20 @@ public class DBHelper extends SQLiteOpenHelper {
                 KEY_ALBUM_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 KEY_ALBUM_NAME + " TEXT NOT NULL, " +
                 KEY_ARTIST_ID + " INTEGER, " +
+                KEY_COVER_ID + "INTEGER, " +
                 KEY_RELEASE_YEAR + " INTEGER, " +
+                "FOREIGN KEY (" + KEY_COVER_ID + ") REFERENCES " + TABLE_COVER_ARTS + "(" + KEY_COVER_ID +"), " +
                 "FOREIGN KEY (" + KEY_ARTIST_ID + ") REFERENCES " + TABLE_ARTISTS + "(" + KEY_ARTIST_ID +"));";
+
+        String createCoverArts = "CREATE TABLE " + TABLE_COVER_ARTS + "(" +
+                KEY_COVER_ID + "INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                KEY_COVER_ART_PATH + "TEXT);";
 
 
         Log.i(TAG, "Created Artists table");
         db.execSQL(createArtists);
         db.execSQL(createAlbums);
+        db.execSQL(createCoverArts);
     }
 
     @Override
@@ -159,7 +169,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
 
     /*--------------------------------------------------------------------------------------------*/
-    /*------------------------------------ Album methods ----------------------------------------*/
+    /*------------------------------------ Album methods -----------------------------------------*/
     /*--------------------------------------------------------------------------------------------*/
 
     public long addAlbum(AlbumItem album){
@@ -283,5 +293,64 @@ public class DBHelper extends SQLiteOpenHelper {
         }
         db.close();
         return result;
+    }
+
+
+    /*--------------------------------------------------------------------------------------------*/
+    /*----------------------------------Cover art methods ----------------------------------------*/
+    /*--------------------------------------------------------------------------------------------*/
+
+    public long addCover(String path){
+        long cover_id = coverExists(path);
+        if(cover_id == -1){
+            SQLiteDatabase db = this.getWritableDatabase();
+
+            ContentValues values = new ContentValues();
+            values.put(KEY_COVER_ART_PATH, path);
+
+            cover_id = db.insert(TABLE_ALBUMS, null, values);
+            Log.i(TAG, "Put cover at rowid = " + String.valueOf(cover_id));
+            db.close();
+        }
+        Log.i(TAG, path + " returns " + String.valueOf(cover_id));
+
+        return cover_id;
+    }
+
+    public long coverExists(String path){
+        long res = -1;
+        Log.i(TAG, "Searching for " + path);
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT * FROM " + TABLE_COVER_ARTS +
+                " WHERE " + KEY_COVER_ART_PATH + " = " + path;
+
+        Cursor c = db.rawQuery(query, null);
+        if(c.moveToFirst()){
+            res = c.getLong(c.getColumnIndex(KEY_COVER_ID));
+            Log.i(TAG, path + " found at " + String.valueOf(res));
+        }
+        c.close();
+        db.close();
+        Log.i(TAG, "Cover found at position " + String.valueOf(res));
+        return res;
+    }
+
+    public String getCoverOfAlbum(AlbumItem album){
+        String res = "None";
+        SQLiteDatabase db = this.getReadableDatabase();
+        Log.i(TAG, "Album's artist id = " + String.valueOf(album.getArtistId()));
+        String query = "SELECT * FROM " + TABLE_COVER_ARTS +
+                " WHERE " + KEY_COVER_ID + " IN (SELECT " + KEY_COVER_ID +
+                " FROM " + TABLE_ALBUMS + " WHERE " +
+                KEY_ARTIST_ID + " = " + album.getArtistId();
+
+        Cursor c = db.rawQuery(query, null);
+        if(c.moveToFirst()){
+            res = c.getString(c.getColumnIndex(KEY_COVER_ART_PATH));
+            Log.i(TAG, res + " found");
+        }
+        c.close();
+        db.close();
+        return res;
     }
 }

@@ -87,6 +87,10 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
 
     @Override
     public void backButtonClicked() {
+        while (getState() != STATES.HOME){
+            changeStateBack();
+        }
+        changeStateNext(STATES.ARTISTS);
         adapter.handleClicks(1, HomeScreenAdapter.ACTIONS.BACK);
     }
 }

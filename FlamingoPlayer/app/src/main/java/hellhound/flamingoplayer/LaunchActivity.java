@@ -111,6 +111,7 @@ public class LaunchActivity extends AppCompatActivity {
                 while( !cursor.isAfterLast() ){
                     String artistName = cursor.getString(1);
                     String albumName = cursor.getString(3);
+                    String path = cursor.getString(5);
                     int albumYear = cursor.getInt(6);
                     Log.i(TAG, String.valueOf(albumYear));
                     ArtistItem artist = new ArtistItem(artistName);
@@ -119,7 +120,6 @@ public class LaunchActivity extends AppCompatActivity {
                     album.setArtistId(artistId);
                     album.setReleaseYear(albumYear);
                     db.addAlbum(album);
-
                     cursor.moveToNext();
                 }
 
@@ -140,12 +140,13 @@ public class LaunchActivity extends AppCompatActivity {
     private boolean createPicsFolder(){
         boolean res = false;
         File imageRoot = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES), getResources().getString(R.string.app_name));
+                Environment.DIRECTORY_DCIM), getResources().getString(R.string.app_name));
         if(!imageRoot.exists()){
             res = imageRoot.mkdirs();
             Log.i(TAG, "Created directory");
         } else {
             Log.i(TAG, "Directory already exists");
+            Log.i(TAG, imageRoot.getAbsolutePath());
         }
         return res;
     }
