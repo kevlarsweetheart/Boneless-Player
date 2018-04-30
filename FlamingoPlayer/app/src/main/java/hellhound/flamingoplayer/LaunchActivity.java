@@ -90,6 +90,7 @@ public class LaunchActivity extends AppCompatActivity {
 
     private void updateDB(){
         DBHelper db = DBHelper.getInstance(getApplicationContext());
+        db.getWritableDatabase();
 
         String selection = MediaStore.Audio.Media.IS_MUSIC + " != 0";
         String[] projection = {
@@ -119,6 +120,7 @@ public class LaunchActivity extends AppCompatActivity {
                     AlbumItem album = new AlbumItem(albumName);
                     album.setArtistId(artistId);
                     album.setReleaseYear(albumYear);
+                    String coverName = albumName + "_" + artistName;
                     db.addAlbum(album);
                     cursor.moveToNext();
                 }
@@ -149,5 +151,15 @@ public class LaunchActivity extends AppCompatActivity {
             Log.i(TAG, imageRoot.getAbsolutePath());
         }
         return res;
+    }
+
+    private boolean coverExists(String name){
+        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM), name);
+        if (file.exists()){
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 }

@@ -55,18 +55,19 @@ public class DBHelper extends SQLiteOpenHelper {
                 KEY_ARTIST_ID + " INTEGER, " +
                 KEY_COVER_ID + "INTEGER, " +
                 KEY_RELEASE_YEAR + " INTEGER, " +
-                "FOREIGN KEY (" + KEY_COVER_ID + ") REFERENCES " + TABLE_COVER_ARTS + "(" + KEY_COVER_ID +"), " +
+                //"FOREIGN KEY (" + KEY_COVER_ID + ") REFERENCES " + TABLE_COVER_ARTS + "(" + KEY_COVER_ID + ")," +
                 "FOREIGN KEY (" + KEY_ARTIST_ID + ") REFERENCES " + TABLE_ARTISTS + "(" + KEY_ARTIST_ID +"));";
 
         String createCoverArts = "CREATE TABLE " + TABLE_COVER_ARTS + "(" +
-                KEY_COVER_ID + "INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                KEY_COVER_ART_PATH + "TEXT);";
+                KEY_COVER_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                KEY_COVER_ART_PATH + " TEXT NOT NULL);";
 
-
-        Log.i(TAG, "Created Artists table");
         db.execSQL(createArtists);
-        db.execSQL(createAlbums);
+        Log.i(TAG, "Created Artists table");
         db.execSQL(createCoverArts);
+        Log.i(TAG, "Created Covers table");
+        db.execSQL(createAlbums);
+        Log.i(TAG, "Created Albums table");
     }
 
     @Override
