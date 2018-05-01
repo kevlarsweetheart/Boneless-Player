@@ -160,6 +160,12 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                  } else {
                      ((ViewHolderAlbum) holder).releaseYear.setText("");
                  }
+                 String cover = ((MainActivity) parent).db.getCoverById(((AlbumItem) item).getCoverId());
+                 Log.i(TAG, cover);
+                 GlideApp.with(parent)
+                         .load(cover)
+                         .placeholder(R.mipmap.default_album)
+                         .into(((ViewHolderAlbum) holder).cover);
                  break;
 
              case ARTIST:

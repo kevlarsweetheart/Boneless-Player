@@ -186,6 +186,7 @@ public class DBHelper extends SQLiteOpenHelper {
             values.put(KEY_ALBUM_NAME, album.getName());
             values.put(KEY_ARTIST_ID, album.getArtistId());
             values.put(KEY_RELEASE_YEAR, album.getReleaseYear());
+            values.put(KEY_COVER_ID, album.getCoverId());
 
             album_id = db.insert(TABLE_ALBUMS, null, values);
             Log.i(TAG, "Put album, rowid = " + String.valueOf(album_id));
@@ -234,10 +235,12 @@ public class DBHelper extends SQLiteOpenHelper {
                 String name = c.getString(c.getColumnIndex(KEY_ALBUM_NAME));
                 int year = c.getInt(c.getColumnIndex(KEY_RELEASE_YEAR));
                 long artist_id = c.getLong(c.getColumnIndex(KEY_ARTIST_ID));
+                long coverId = c.getLong(c.getColumnIndex(KEY_COVER_ID));
                 Log.i(TAG, "Added " + name);
                 MenuItem item = new AlbumItem(name);
                 ((AlbumItem) item).setArtistId(artist_id);
                 ((AlbumItem) item).setReleaseYear(year);
+                ((AlbumItem) item).setCoverId(coverId);
                 res.add(item);
                 c.moveToNext();
             }
@@ -261,10 +264,12 @@ public class DBHelper extends SQLiteOpenHelper {
                 String name = c.getString(c.getColumnIndex(KEY_ALBUM_NAME));
                 int year = c.getInt(c.getColumnIndex(KEY_RELEASE_YEAR));
                 long artist_id = c.getLong(c.getColumnIndex(KEY_ARTIST_ID));
+                long coverId = c.getLong(c.getColumnIndex(KEY_COVER_ID));
                 Log.i(TAG, "Added " + name);
                 MenuItem item = new AlbumItem(name);
                 ((AlbumItem) item).setArtistId(artist_id);
                 ((AlbumItem) item).setReleaseYear(year);
+                ((AlbumItem) item).setCoverId(coverId);
                 res.add(item);
                 c.moveToNext();
             }
@@ -340,14 +345,12 @@ public class DBHelper extends SQLiteOpenHelper {
         return res;
     }
 
-    public String getCoverOfAlbum(AlbumItem album){
+
+    public String getCoverById(long id){
         String res = "None";
         SQLiteDatabase db = this.getReadableDatabase();
-        Log.i(TAG, "Album's artist id = " + String.valueOf(album.getArtistId()));
         String query = "SELECT * FROM " + TABLE_COVERS +
-                " WHERE " + KEY_COVER_ID + " IN (SELECT " + KEY_COVER_ID +
-                " FROM " + TABLE_ALBUMS + " WHERE " +
-                KEY_ARTIST_ID + " = " + album.getArtistId();
+                " WHERE " + KEY_COVER_ID + " = " +id;
 
         Cursor c = db.rawQuery(query, null);
         if(c.moveToFirst()){
