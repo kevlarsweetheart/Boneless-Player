@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -20,7 +22,12 @@ import android.widget.ImageView;
 import com.bumptech.glide.Glide;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
+
+import wseemann.media.FFmpegMediaMetadataRetriever;
 
 public class LaunchActivity extends AppCompatActivity {
 
@@ -35,10 +42,10 @@ public class LaunchActivity extends AppCompatActivity {
         ImageView icon = (ImageView) findViewById(R.id.launch_icon);
 
         GlideApp.with(getApplicationContext()).load(R.mipmap.flamingo_launcher_rounded).into(icon);
-        createPicsFolder();
         if((ContextCompat.checkSelfPermission(LaunchActivity.this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)){
             Log.i(TAG, "Permission granted");
+            createPicsFolder();
             //All permissions granted, launching player
             updateDB();
             launchMainActivity();
@@ -57,6 +64,7 @@ public class LaunchActivity extends AppCompatActivity {
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED){
 
                     //All permissions granted, launching player
+                    createPicsFolder();
                     updateDB();
                     launchMainActivity();
                 } else {
@@ -91,6 +99,8 @@ public class LaunchActivity extends AppCompatActivity {
     private void updateDB(){
         DBHelper db = DBHelper.getInstance(getApplicationContext());
         db.getWritableDatabase();
+        db.close();
+        db.showTables();
 
         String selection = MediaStore.Audio.Media.IS_MUSIC + " != 0";
         String[] projection = {
@@ -114,6 +124,7 @@ public class LaunchActivity extends AppCompatActivity {
                     String albumName = cursor.getString(3);
                     String path = cursor.getString(5);
                     int albumYear = cursor.getInt(6);
+                    Log.i(TAG, path);
                     Log.i(TAG, String.valueOf(albumYear));
                     ArtistItem artist = new ArtistItem(artistName);
                     long artistId = db.addArtist(artist);
@@ -121,8 +132,24 @@ public class LaunchActivity extends AppCompatActivity {
                     album.setArtistId(artistId);
                     album.setReleaseYear(albumYear);
                     String coverName = albumName + "_" + artistName;
+                    coverName = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM) + "/" +
+                            getResources().getString(R.string.app_name) + "/" + coverName + ".png";
+                    boolean flag = coverExists(coverName);
+                    long coverId;
+                    if (flag){
+                        coverId = db.addCover(coverName);
+                    } else {
+                        if (saveCover(coverName, path)){
+                            coverId = db.addCover(coverName);
+                        } else {
+                            coverId = -1;
+                        }
+
+                    }
+                    album.setCoverId(coverId);
                     db.addAlbum(album);
                     cursor.moveToNext();
+                    Log.i(TAG, "--------------------------------------------");
                 }
 
             }
@@ -134,7 +161,6 @@ public class LaunchActivity extends AppCompatActivity {
                 cursor.close();
             }
         }
-        db.close();
 
     }
 
@@ -154,12 +180,50 @@ public class LaunchActivity extends AppCompatActivity {
     }
 
     private boolean coverExists(String name){
-        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM), name);
+        File file = new File(name);
+        Log.i(TAG, file.getAbsolutePath());
         if (file.exists()){
+            Log.i(TAG, "Cover exists");
             return true;
         }
         else {
+            Log.i(TAG, "Cover does not exist");
             return false;
         }
+    }
+
+    private boolean saveCover(String name, String path){
+        FFmpegMediaMetadataRetriever mmr = new FFmpegMediaMetadataRetriever();
+        mmr.setDataSource(path);
+        byte [] cover = mmr.getEmbeddedPicture();
+        if (cover != null){
+            Log.i(TAG, "Cover length is " + String.valueOf(cover.length));
+            Bitmap bitmap = BitmapFactory.decodeByteArray(cover, 0, cover.length);
+
+            FileOutputStream out = null;
+            try {
+                Log.i(TAG, name);
+                out = new FileOutputStream(name);
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
+            } finally {
+                try {
+                    if (out != null) {
+                        out.close();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            mmr.release();
+            return true;
+        } else {
+            Log.i(TAG, "No cover found");
+            return false;
+        }
+
     }
 }

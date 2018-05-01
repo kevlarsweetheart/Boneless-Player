@@ -24,11 +24,11 @@ public class DBHelper extends SQLiteOpenHelper {
     private final static String TABLE_ALBUMS = "albums";
     private final static String KEY_ALBUM_ID = "album_id";
     private final static String KEY_ALBUM_NAME = "album_name";
-    private final static String KEY_COVER_ID = "cover_art_id";
     private final static String KEY_RELEASE_YEAR = "release_year";
 
-    private final static String TABLE_COVER_ARTS = "cover_arts";
-    private final static String KEY_COVER_ART_PATH = "cover_art_path";
+    private final static String TABLE_COVERS = "covers";
+    private final static String KEY_COVER_ID = "cover_id";
+    private final static String KEY_COVER_PATH = "cover_path";
 
 
     public static synchronized DBHelper getInstance(Context context){
@@ -53,18 +53,22 @@ public class DBHelper extends SQLiteOpenHelper {
                 KEY_ALBUM_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 KEY_ALBUM_NAME + " TEXT NOT NULL, " +
                 KEY_ARTIST_ID + " INTEGER, " +
-                KEY_COVER_ID + "INTEGER, " +
+                KEY_COVER_ID + " INTEGER, " +
                 KEY_RELEASE_YEAR + " INTEGER, " +
-                //"FOREIGN KEY (" + KEY_COVER_ID + ") REFERENCES " + TABLE_COVER_ARTS + "(" + KEY_COVER_ID + ")," +
+                "FOREIGN KEY (" + KEY_COVER_ID + ") REFERENCES " + TABLE_COVERS + "(" + KEY_COVER_ID + "), " +
                 "FOREIGN KEY (" + KEY_ARTIST_ID + ") REFERENCES " + TABLE_ARTISTS + "(" + KEY_ARTIST_ID +"));";
 
-        String createCoverArts = "CREATE TABLE " + TABLE_COVER_ARTS + "(" +
+        String createCovers = "CREATE TABLE " + TABLE_COVERS + "(" +
                 KEY_COVER_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                KEY_COVER_ART_PATH + " TEXT NOT NULL);";
+                KEY_COVER_PATH + " TEXT NOT NULL);";
+
+        Log.i(TAG, createArtists);
+        Log.i(TAG, createCovers);
+        Log.i(TAG, createAlbums);
 
         db.execSQL(createArtists);
         Log.i(TAG, "Created Artists table");
-        db.execSQL(createCoverArts);
+        db.execSQL(createCovers);
         Log.i(TAG, "Created Covers table");
         db.execSQL(createAlbums);
         Log.i(TAG, "Created Albums table");
@@ -307,9 +311,9 @@ public class DBHelper extends SQLiteOpenHelper {
             SQLiteDatabase db = this.getWritableDatabase();
 
             ContentValues values = new ContentValues();
-            values.put(KEY_COVER_ART_PATH, path);
+            values.put(KEY_COVER_PATH, path);
 
-            cover_id = db.insert(TABLE_ALBUMS, null, values);
+            cover_id = db.insert(TABLE_COVERS, null, values);
             Log.i(TAG, "Put cover at rowid = " + String.valueOf(cover_id));
             db.close();
         }
@@ -322,8 +326,8 @@ public class DBHelper extends SQLiteOpenHelper {
         long res = -1;
         Log.i(TAG, "Searching for " + path);
         SQLiteDatabase db = this.getReadableDatabase();
-        String query = "SELECT * FROM " + TABLE_COVER_ARTS +
-                " WHERE " + KEY_COVER_ART_PATH + " = " + path;
+        String query = "SELECT * FROM " + TABLE_COVERS +
+                " WHERE \"" + path + "\" = " + KEY_COVER_PATH;
 
         Cursor c = db.rawQuery(query, null);
         if(c.moveToFirst()){
@@ -340,14 +344,14 @@ public class DBHelper extends SQLiteOpenHelper {
         String res = "None";
         SQLiteDatabase db = this.getReadableDatabase();
         Log.i(TAG, "Album's artist id = " + String.valueOf(album.getArtistId()));
-        String query = "SELECT * FROM " + TABLE_COVER_ARTS +
+        String query = "SELECT * FROM " + TABLE_COVERS +
                 " WHERE " + KEY_COVER_ID + " IN (SELECT " + KEY_COVER_ID +
                 " FROM " + TABLE_ALBUMS + " WHERE " +
                 KEY_ARTIST_ID + " = " + album.getArtistId();
 
         Cursor c = db.rawQuery(query, null);
         if(c.moveToFirst()){
-            res = c.getString(c.getColumnIndex(KEY_COVER_ART_PATH));
+            res = c.getString(c.getColumnIndex(KEY_COVER_PATH));
             Log.i(TAG, res + " found");
         }
         c.close();
