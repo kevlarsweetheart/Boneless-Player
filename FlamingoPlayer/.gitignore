@@ -8,3 +8,4 @@
 /build
 /captures
 .externalNativeBuild
+values/api_keys.xml

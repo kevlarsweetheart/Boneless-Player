@@ -25,8 +25,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 
+import de.umass.lastfm.Album;
+import de.umass.lastfm.Caller;
+import de.umass.lastfm.ImageSize;
 import wseemann.media.FFmpegMediaMetadataRetriever;
 
 public class LaunchActivity extends AppCompatActivity {
@@ -43,14 +47,17 @@ public class LaunchActivity extends AppCompatActivity {
 
         GlideApp.with(getApplicationContext()).load(R.mipmap.flamingo_launcher_rounded).into(icon);
         if((ContextCompat.checkSelfPermission(LaunchActivity.this,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)){
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) &&
+                (ContextCompat.checkSelfPermission(LaunchActivity.this, Manifest.permission.INTERNET) ==
+                        PackageManager.PERMISSION_GRANTED)){
             Log.i(TAG, "Permission granted");
             createPicsFolder();
             //All permissions granted, launching player
             updateDB();
             launchMainActivity();
         } else {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.INTERNET},
                     STORAGE_PERMISSION);
         }
     }
@@ -139,7 +146,7 @@ public class LaunchActivity extends AppCompatActivity {
                     if (flag){
                         coverId = db.addCover(coverName);
                     } else {
-                        if (saveCover(coverName, path)){
+                        if (saveCover(coverName, path, albumName, artistName)){
                             coverId = db.addCover(coverName);
                         } else {
                             coverId = -1;
@@ -192,7 +199,7 @@ public class LaunchActivity extends AppCompatActivity {
         }
     }
 
-    private boolean saveCover(String name, String path){
+    private boolean saveCover(String name, String path, String albumName, String artistName){
         FFmpegMediaMetadataRetriever mmr = new FFmpegMediaMetadataRetriever();
         mmr.setDataSource(path);
         byte [] cover = mmr.getEmbeddedPicture();

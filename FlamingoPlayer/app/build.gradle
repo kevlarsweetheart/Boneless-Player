@@ -32,4 +32,6 @@ dependencies {
     implementation "com.github.bumptech.glide:okhttp3-integration:4.0.0-RC1"
     implementation 'com.github.wseemann:FFmpegMediaMetadataRetriever:1.0.14'
     implementation 'com.github.wseemann:FFmpegMediaMetadataRetriever:1.0.14'
+    implementation 'de.u-mass:lastfm-java:0.1.2'
+    implementation 'com.google.android.exoplayer:exoplayer:2.6.1'
 }

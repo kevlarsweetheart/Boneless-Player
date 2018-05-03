@@ -4,13 +4,16 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.os.Environment;
 import android.support.annotation.NonNull;
+import android.support.constraint.ConstraintLayout;
 import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.MultiAutoCompleteTextView;
 import android.widget.TextView;
@@ -20,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Queue;
 
 import android.os.Handler;
+import android.widget.Toast;
 
 public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
@@ -178,6 +182,11 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
              case PLAY_ALL:
                  Log.i(TAG, "Binding playall item");
+                 if(((PlayAllItem) item).isPlayAllVisible()){
+                     ((ViewHolderPlayAll) holder).viewAll.setVisibility(View.VISIBLE);
+                 } else {
+                     ((ViewHolderPlayAll) holder).viewAll.setVisibility(View.GONE);
+                 }
                  break;
          }
     }
@@ -255,11 +264,12 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     /*--------------------------------------------------------------------------------------------*/
     /*----------------------------------- Album View Holder --------------------------------------*/
     /*--------------------------------------------------------------------------------------------*/
-    public class ViewHolderAlbum extends RecyclerView.ViewHolder implements View.OnClickListener{
+    public class ViewHolderAlbum extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnCreateContextMenuListener{
         TextView albumName;
         TextView songsNumber;
         TextView releaseYear;
         ImageView cover;
+        ImageButton more;
         CardView cv;
 
         public ViewHolderAlbum(View itemView) {
@@ -273,12 +283,43 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
         public void setListeners(){
             cv.setOnClickListener(this);
+            cv.setOnCreateContextMenuListener(this);
         }
 
         @Override
         public void onClick(View v) {
-
+            Log.i(TAG, "Clicked on album");
         }
+
+        @Override
+        public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+            menu.setHeaderTitle("Select action");
+            android.view.MenuItem fetch = menu.add(this.getAdapterPosition(), 0, 0, "Fetch album art");
+            android.view.MenuItem cake = menu.add(this.getAdapterPosition(), 1, 0, "Get a cake");
+            fetch.setOnMenuItemClickListener(listener);
+            cake.setOnMenuItemClickListener(listener);
+        }
+
+        private final android.view.MenuItem.OnMenuItemClickListener listener = new android.view.MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(android.view.MenuItem item) {
+                Toast toast;
+                switch (item.getItemId()){
+                    case 0:
+                        toast = Toast.makeText(parent, "Downloading album art from web", Toast.LENGTH_LONG);
+                        toast.show();
+                        break;
+
+                    case 1:
+                        toast = Toast.makeText(parent, "Here is your cake, enjoy!", Toast.LENGTH_LONG);
+                        toast.show();
+                        break;
+                }
+                return true;
+            }
+        };
+
+
     }
 
 
