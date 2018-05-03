@@ -327,12 +327,13 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public long updateAlbumCover(AlbumItem album, long coverId){
         long album_id = albumExists(album);
+        Log.i(TAG, "Album found at " + String.valueOf(album_id));
         if(album_id >= 0){
             SQLiteDatabase db = this.getWritableDatabase();
             ContentValues values = new ContentValues();
             values.put(KEY_COVER_ID, coverId);
-            db.update(TABLE_ALBUMS, values, "? = ?", new String[] {KEY_ALBUM_ID, String.valueOf(album_id)});
-
+            db.update(TABLE_ALBUMS, values, KEY_ALBUM_ID + " = " + String.valueOf(album_id), null);
+            Log.i(TAG, "Updated album art");
             return album_id;
         } else {
             return -1;

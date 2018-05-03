@@ -2,6 +2,8 @@ package hellhound.flamingoplayer;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.support.annotation.NonNull;
@@ -20,6 +22,9 @@ import android.widget.MultiAutoCompleteTextView;
 import android.widget.TextView;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -314,7 +319,7 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                 Toast toast;
                 switch (item.getItemId()){
                     case 0:
-                        toast = Toast.makeText(parent, "Downloading album art from web", Toast.LENGTH_LONG);
+                        toast = Toast.makeText(parent, "Downloading album art from web", Toast.LENGTH_SHORT);
                         toast.show();
                         task = new DownloadArt();
                         task.execute((AlbumItem) items.get(getAdapterPosition()));
@@ -334,7 +339,7 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
             protected String doInBackground(AlbumItem... albums) {
                 AlbumItem album = albums[0];
                 ArtistItem artist = ((MainActivity) parent).db.getArtistByAlbum(album);
-                String url = getCoverUrl(artist.getName(), album.getName());
+                String url = downloadAndSaveCover(artist, album);
                 if(url != null){
                     return url;
                 } else {
@@ -351,7 +356,9 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
             }
 
-            private String getCoverUrl(String artistName, String albumName){
+            private String downloadAndSaveCover(ArtistItem artist, AlbumItem album){
+                String albumName = album.getName();
+                String artistName = artist.getName();
                 String url = "https://www.googleapis.com/customsearch/v1?key=AIzaSyC-FAI2A9BeOSIdpKral0LO3Z2lqZoStHk&cx=018060032051945042082:ooluxsoos3m&num=1&q=";
                 url += artistName.replaceAll(" ", "+") + "+" + albumName.replaceAll(" ", "+");
                 try {
@@ -369,6 +376,25 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                     String res = json.getJSONArray("items").getJSONObject(0)
                             .getJSONObject("pagemap").getJSONArray("cse_image")
                             .getJSONObject(0).getString("src");
+                    connection.disconnect();
+
+                    // Saving file to DCIM/Flamingo Player
+                    connection = (HttpURLConnection) new URL(res).openConnection();
+                    connection.connect();
+                    InputStream input = connection.getInputStream();
+                    Bitmap bmp = BitmapFactory.decodeStream(input);
+
+                    String coverName = albumName + "_" + artistName;
+                    coverName = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM) + "/" +
+                            ((MainActivity)parent).getResources().getString(R.string.app_name) + "/" + coverName + ".png";
+                    File outFile = new File(coverName);
+                    FileOutputStream output = new FileOutputStream(outFile, false);
+                    bmp.compress(Bitmap.CompressFormat.PNG, 100, output);
+
+                    if(album.getCoverId() == -1){
+                        long coverId = ((MainActivity) parent).db.addCover(coverName);
+                        ((MainActivity) parent).db.updateAlbumCover(album, coverId);
+                    }
                     Log.i(TAG, res);
                     return res;
                 } catch (Exception e) {
