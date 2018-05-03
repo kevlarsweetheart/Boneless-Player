@@ -2,6 +2,7 @@ package hellhound.flamingoplayer;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.os.AsyncTask;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
@@ -18,12 +19,18 @@ import android.widget.ImageView;
 import android.widget.MultiAutoCompleteTextView;
 import android.widget.TextView;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Queue;
 
 import android.os.Handler;
 import android.widget.Toast;
+
+import org.json.JSONObject;
 
 public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
@@ -271,6 +278,7 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         ImageView cover;
         ImageButton more;
         CardView cv;
+        DownloadArt task;
 
         public ViewHolderAlbum(View itemView) {
             super(itemView);
@@ -308,6 +316,8 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                     case 0:
                         toast = Toast.makeText(parent, "Downloading album art from web", Toast.LENGTH_LONG);
                         toast.show();
+                        task = new DownloadArt();
+                        task.execute((AlbumItem) items.get(getAdapterPosition()));
                         break;
 
                     case 1:
@@ -319,6 +329,54 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
             }
         };
 
+        class DownloadArt extends AsyncTask<AlbumItem, Void, String>{
+            @Override
+            protected String doInBackground(AlbumItem... albums) {
+                AlbumItem album = albums[0];
+                ArtistItem artist = ((MainActivity) parent).db.getArtistByAlbum(album);
+                String url = getCoverUrl(artist.getName(), album.getName());
+                if(url != null){
+                    return url;
+                } else {
+                    return "";
+                }
+            }
+
+            @Override
+            protected void onPostExecute(String result) {
+                super.onPostExecute(result);
+                GlideApp.with(parent).load(result)
+                        .placeholder(R.mipmap.default_album)
+                        .into(cover);
+
+            }
+
+            private String getCoverUrl(String artistName, String albumName){
+                String url = "https://www.googleapis.com/customsearch/v1?key=AIzaSyC-FAI2A9BeOSIdpKral0LO3Z2lqZoStHk&cx=018060032051945042082:ooluxsoos3m&num=1&q=";
+                url += artistName.replaceAll(" ", "+") + "+" + albumName.replaceAll(" ", "+");
+                try {
+                    URL obj = new URL(url);
+                    HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
+                    connection.setRequestMethod("GET");
+                    BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                    String inputLine;
+                    StringBuilder response = new StringBuilder();
+                    while ((inputLine = in.readLine()) != null) {
+                        response.append(inputLine);
+                    }
+                    in.close();
+                    JSONObject json = new JSONObject(response.toString());
+                    String res = json.getJSONArray("items").getJSONObject(0)
+                            .getJSONObject("pagemap").getJSONArray("cse_image")
+                            .getJSONObject(0).getString("src");
+                    Log.i(TAG, res);
+                    return res;
+                } catch (Exception e) {
+                    Log.i(TAG, e.getMessage());
+                    return null;
+                }
+            }
+        }
 
     }
 

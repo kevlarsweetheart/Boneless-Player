@@ -172,6 +172,26 @@ public class DBHelper extends SQLiteOpenHelper {
         return res;
     }
 
+    public ArtistItem getArtistByAlbum(AlbumItem album){
+        if(albumExists(album) >= 0){
+            SQLiteDatabase db = this.getReadableDatabase();
+            String query = "SELECT " + KEY_ARTIST_NAME + " FROM " +TABLE_ARTISTS +
+                    " WHERE " + KEY_ARTIST_ID + " = " + album.getArtistId();
+            Cursor c = db.rawQuery(query, null);
+            if(c.moveToFirst()){
+                String name = c.getString(c.getColumnIndex(KEY_ARTIST_NAME));
+                c.close();
+                db.close();
+                return new ArtistItem(name);
+            } else {
+                db.close();
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
+
 
     /*--------------------------------------------------------------------------------------------*/
     /*------------------------------------ Album methods -----------------------------------------*/
@@ -303,6 +323,20 @@ public class DBHelper extends SQLiteOpenHelper {
         }
         db.close();
         return result;
+    }
+
+    public long updateAlbumCover(AlbumItem album, long coverId){
+        long album_id = albumExists(album);
+        if(album_id >= 0){
+            SQLiteDatabase db = this.getWritableDatabase();
+            ContentValues values = new ContentValues();
+            values.put(KEY_COVER_ID, coverId);
+            db.update(TABLE_ALBUMS, values, "? = ?", new String[] {KEY_ALBUM_ID, String.valueOf(album_id)});
+
+            return album_id;
+        } else {
+            return -1;
+        }
     }
 
 
