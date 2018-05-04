@@ -30,6 +30,13 @@ public class DBHelper extends SQLiteOpenHelper {
     private final static String KEY_COVER_ID = "cover_id";
     private final static String KEY_COVER_PATH = "cover_path";
 
+    private final static String TABLE_TRACKS = "tracks";
+    private final static String KEY_TRACK_ID = "track_id";
+    private final static String KEY_TRACK_NAME = "track_name";
+    private final static String KEY_TRACK_PATH = "path";
+    private final static String KEY_TRACK_NUMBER = "track_number";
+    private final static String KEY_TRACK_LENGTH = "track_length";
+
 
     public static synchronized DBHelper getInstance(Context context){
         if (INSTANCE == null){
@@ -62,9 +69,21 @@ public class DBHelper extends SQLiteOpenHelper {
                 KEY_COVER_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 KEY_COVER_PATH + " TEXT NOT NULL);";
 
+        String createTracks = "CREATE TABLE " + TABLE_TRACKS + "(" +
+                KEY_TRACK_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                KEY_TRACK_NAME + " TEXT NOT NULL, " +
+                KEY_TRACK_PATH + " TEXT, " +
+                KEY_TRACK_NUMBER + " INTEGER, " +
+                KEY_TRACK_LENGTH + " INTEGER, " +
+                KEY_ALBUM_ID + " INTEGER, " +
+                KEY_ARTIST_ID + " INTEGER, " +
+                "FOREIGN KEY (" + KEY_ALBUM_ID + ") REFERENCES " + TABLE_ALBUMS + "(" + KEY_ALBUM_ID + "), " +
+                "FOREIGN KEY (" + KEY_ARTIST_ID + ") REFERENCES " + TABLE_ARTISTS + "(" + KEY_ARTIST_ID + "));";
+
         Log.i(TAG, createArtists);
         Log.i(TAG, createCovers);
         Log.i(TAG, createAlbums);
+        Log.i(TAG, createTracks);
 
         db.execSQL(createArtists);
         Log.i(TAG, "Created Artists table");
@@ -72,6 +91,8 @@ public class DBHelper extends SQLiteOpenHelper {
         Log.i(TAG, "Created Covers table");
         db.execSQL(createAlbums);
         Log.i(TAG, "Created Albums table");
+        db.execSQL(createTracks);
+        Log.i(TAG, "Create Tracks table");
     }
 
     @Override
@@ -393,6 +414,84 @@ public class DBHelper extends SQLiteOpenHelper {
             Log.i(TAG, res + " found");
         }
         c.close();
+        db.close();
+        return res;
+    }
+
+
+    /*--------------------------------------------------------------------------------------------*/
+    /*------------------------------------- Track methods ----------------------------------------*/
+    /*--------------------------------------------------------------------------------------------*/
+
+    public long addTrack(TrackItem track){
+        long trackId = trackExists(track);
+        if(trackId == -1){
+            SQLiteDatabase db = this.getWritableDatabase();
+            ContentValues values = new ContentValues();
+
+            values.put(KEY_TRACK_NAME, track.getName());
+            values.put(KEY_TRACK_PATH, track.getPath());
+            values.put(KEY_TRACK_LENGTH, track.getLength());
+            values.put(KEY_TRACK_NUMBER, track.getTrackNumber());
+            values.put(KEY_ALBUM_ID, track.getAlbumId());
+            values.put(KEY_ARTIST_ID, track.getArtistId());
+
+            trackId = db.insert(TABLE_TRACKS, null, values);
+            db.close();
+        }
+        Log.i(TAG, "Put track at " + String.valueOf(trackId));
+        return trackId;
+    }
+
+    public long trackExists(TrackItem track){
+        long res = -1;
+        Log.i(TAG, "Searching for " + track.getName());
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String query = "SELECT " + KEY_TRACK_ID + " FROM " + TABLE_TRACKS +
+                " WHERE " + KEY_TRACK_NAME + " = \"" + track.getName() + "\"" +
+                " AND " + KEY_ALBUM_ID + " = " + track.getAlbumId() +
+                " AND " + KEY_ARTIST_ID + " = " + track.getArtistId() + ";";
+
+        Cursor c = db.rawQuery(query, null);
+        if(c.moveToFirst()){
+            res = c.getLong(c.getColumnIndex(KEY_TRACK_ID));
+        }
+        c.close();
+        db.close();
+        Log.i(TAG, "Track found at " + String.valueOf(res));
+        return  res;
+    }
+
+    public ArrayList<MenuItem> getAllTracks(){
+        ArrayList<MenuItem> res = new ArrayList<>();
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT * FROM " + TABLE_TRACKS +
+                " ORDER BY " + KEY_TRACK_NAME + " ASC;";
+        Cursor c = db.rawQuery(query, null);
+        if(c != null){
+            c.moveToFirst();
+            while (!c.isAfterLast()) {
+                String name = c.getString(c.getColumnIndex(KEY_TRACK_NAME));
+                String path = c.getString(c.getColumnIndex(KEY_TRACK_PATH));
+                int length = c.getInt(c.getColumnIndex(KEY_TRACK_LENGTH));
+                int trackNumber = c.getInt(c.getColumnIndex(KEY_TRACK_NUMBER));
+                long artistId = c.getLong(c.getColumnIndex(KEY_ARTIST_ID));
+                long albumId = c.getLong(c.getColumnIndex(KEY_ALBUM_ID));
+
+                Log.i(TAG, "Added " + name);
+                MenuItem item = new TrackItem(name);
+                ((TrackItem) item).setPath(path);
+                ((TrackItem) item).setLength(length);
+                ((TrackItem) item).setTrackNumber(trackNumber);
+                ((TrackItem) item).setAlbumId(albumId);
+                ((TrackItem) item).setArtistId(artistId);
+                res.add(item);
+                c.moveToNext();
+            }
+            c.close();
+        }
         db.close();
         return res;
     }

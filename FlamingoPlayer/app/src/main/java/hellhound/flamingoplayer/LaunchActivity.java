@@ -127,14 +127,21 @@ public class LaunchActivity extends AppCompatActivity {
                 cursor.moveToFirst();
 
                 while( !cursor.isAfterLast() ){
-                    String artistName = cursor.getString(1);
-                    String albumName = cursor.getString(3);
-                    String path = cursor.getString(5);
-                    int albumYear = cursor.getInt(6);
+                    String trackName = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
+                    String artistName = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
+                    String albumName = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM));
+                    String path = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
+                    int albumYear = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.YEAR));
+                    int length = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION));
+                    int trackNumber = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media._ID));
                     Log.i(TAG, path);
                     Log.i(TAG, String.valueOf(albumYear));
+
+                    //Adding artist
                     ArtistItem artist = new ArtistItem(artistName);
                     long artistId = db.addArtist(artist);
+
+                    //Adding album and cover
                     AlbumItem album = new AlbumItem(albumName);
                     album.setArtistId(artistId);
                     album.setReleaseYear(albumYear);
@@ -154,7 +161,16 @@ public class LaunchActivity extends AppCompatActivity {
 
                     }
                     album.setCoverId(coverId);
-                    db.addAlbum(album);
+                    long albumId = db.addAlbum(album);
+
+                    //Adding track
+                    TrackItem track = new TrackItem(trackName);
+                    track.setTrackNumber(trackNumber);
+                    track.setLength(length);
+                    track.setArtistId(artistId);
+                    track.setAlbumId(albumId);
+                    track.setPath(path);
+                    db.addTrack(track);
                     cursor.moveToNext();
                     Log.i(TAG, "--------------------------------------------");
                 }

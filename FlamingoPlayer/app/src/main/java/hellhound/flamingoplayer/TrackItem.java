@@ -4,8 +4,10 @@ public class TrackItem extends MenuItem {
 
     int trackNumber;
     String path;
-    int albumId;
-    int artistId;
+    long albumId;
+    long artistId;
+    int length;
+
 
     public TrackItem(String name) {
         super(name);
@@ -28,19 +30,27 @@ public class TrackItem extends MenuItem {
         this.path = path;
     }
 
-    public int getAlbumId() {
+    public long getAlbumId() {
         return albumId;
     }
 
-    public void setAlbumId(int albumId) {
+    public void setAlbumId(long albumId) {
         this.albumId = albumId;
     }
 
-    public int getArtistId() {
+    public long getArtistId() {
         return artistId;
     }
 
-    public void setArtistId(int artistId) {
+    public void setArtistId(long artistId) {
         this.artistId = artistId;
+    }
+
+    public int getLength() {
+        return length;
+    }
+
+    public void setLength(int length) {
+        this.length = length;
     }
 }
