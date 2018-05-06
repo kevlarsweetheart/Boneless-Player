@@ -83,7 +83,7 @@ public class DBHelper extends SQLiteOpenHelper {
         Log.i(TAG, createArtists);
         Log.i(TAG, createCovers);
         Log.i(TAG, createAlbums);
-        Log.i(TAG, createTracks);
+        Log.d(TAG, createTracks);
 
         db.execSQL(createArtists);
         Log.i(TAG, "Created Artists table");

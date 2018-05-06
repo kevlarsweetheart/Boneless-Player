@@ -113,7 +113,7 @@ public class LaunchActivity extends AppCompatActivity {
         String[] projection = {
                 MediaStore.Audio.Media.TITLE,
                 MediaStore.Audio.Media.ARTIST,
-                MediaStore.Audio.Media._ID,
+                MediaStore.Audio.Media.TRACK,
                 MediaStore.Audio.Media.ALBUM,
                 MediaStore.Audio.Media.DURATION,
                 MediaStore.Audio.Media.DATA,
@@ -133,7 +133,7 @@ public class LaunchActivity extends AppCompatActivity {
                     String path = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
                     int albumYear = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.YEAR));
                     int length = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION));
-                    int trackNumber = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media._ID));
+                    int trackNumber = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.TRACK));
                     Log.i(TAG, path);
                     Log.i(TAG, String.valueOf(albumYear));
 
