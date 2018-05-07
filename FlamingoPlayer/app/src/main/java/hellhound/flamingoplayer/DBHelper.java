@@ -3,6 +3,7 @@ package hellhound.flamingoplayer;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.CursorIndexOutOfBoundsException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
@@ -129,12 +130,29 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
 
+
+    private int itemCounter(String query){
+        int result = 0;
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor c = db.rawQuery(query, null);
+        if(c != null){
+            c.moveToFirst();
+            result = c.getInt(0);
+            c.close();
+        }
+        db.close();
+        return result;
+
+    }
+
+
     /*--------------------------------------------------------------------------------------------*/
     /*------------------------------------ Artist methods ----------------------------------------*/
     /*--------------------------------------------------------------------------------------------*/
     public long addArtist(ArtistItem item){
 
-        long artist_id = artistExists(item, false);
+        long artist_id = artistExists(item);
 
         if(artist_id == -1){
             SQLiteDatabase db = this.getWritableDatabase();
@@ -150,7 +168,7 @@ public class DBHelper extends SQLiteOpenHelper {
         return artist_id;
     }
 
-    public long artistExists(ArtistItem item, boolean updateFound){
+    public long artistExists(ArtistItem item){
         Log.i(TAG, "Searching for " + item. getName());
         SQLiteDatabase db = this.getReadableDatabase();
         String query = "SELECT " + KEY_ARTIST_ID + " FROM " + TABLE_ARTISTS +
@@ -320,31 +338,24 @@ public class DBHelper extends SQLiteOpenHelper {
         return res;
     }
 
+
     public int getAlbumCount(){
-        return getAlbumsCount(null);
+        String query = "SELECT COUNT(" + KEY_ALBUM_NAME + ") FROM " + TABLE_ALBUMS;
+        return itemCounter(query);
     }
 
     public int getAlbumsCount(ArtistItem artist){
-        int result = -1;
-        SQLiteDatabase db = this.getReadableDatabase();
-        String query = "SELECT COUNT(" + KEY_ALBUM_NAME + ") FROM " + TABLE_ALBUMS;
+        long artistId = artistExists(artist);
 
-        if (artist != null){
-            query += " WHERE "+ KEY_ARTIST_ID + " IN " +
-                    "( SELECT " + KEY_ARTIST_ID + " FROM " + TABLE_ARTISTS +
-                    " WHERE " + KEY_ARTIST_NAME + " = \"" + artist.getName() + "\");";
+        if(artistId == -1){
+            return 0;
+        } else {
+            String query = "SELECT COUNT(" + KEY_ALBUM_NAME + ") FROM " + TABLE_ALBUMS +
+                    " WHERE " + KEY_ARTIST_ID + " = " + artistId;
+            return itemCounter(query);
         }
-
-        Cursor c = db.rawQuery(query, null);
-
-        if(c != null){
-            c.moveToFirst();
-            result = c.getInt(0);
-            c.close();
-        }
-        db.close();
-        return result;
     }
+
 
     public long updateAlbumCover(AlbumItem album, long coverId){
         long album_id = albumExists(album);
@@ -382,6 +393,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
         return cover_id;
     }
+
 
     public long coverExists(String path){
         long res = -1;
@@ -443,6 +455,7 @@ public class DBHelper extends SQLiteOpenHelper {
         return trackId;
     }
 
+
     public long trackExists(TrackItem track){
         long res = -1;
         Log.i(TAG, "Searching for " + track.getName());
@@ -463,15 +476,49 @@ public class DBHelper extends SQLiteOpenHelper {
         return  res;
     }
 
-    public ArrayList<MenuItem> getAllTracks(){
-        ArrayList<MenuItem> res = new ArrayList<>();
 
-        SQLiteDatabase db = this.getReadableDatabase();
+    public ArrayList<MenuItem> getTracksOf(){
         String query = "SELECT * FROM " + TABLE_TRACKS +
                 " ORDER BY " + KEY_TRACK_NAME + " ASC;";
+        return tracksProvider(query);
+    }
+
+
+    public ArrayList<MenuItem> getTracksOf(AlbumItem album){
+        long albumId = albumExists(album);
+
+        if (albumId == -1){
+            return null;
+        } else {
+            String query = "SELECT * FROM " + TABLE_TRACKS +
+                    " WHERE " + KEY_ALBUM_ID + " = " + albumId +
+                    " ORDER BY " + KEY_TRACK_ID + "ASC;";
+            return tracksProvider(query);
+        }
+    }
+
+
+    public ArrayList<MenuItem> getTracksOf(ArtistItem artist){
+        long artistId = artistExists(artist);
+
+        if (artistId == -1){
+            return null;
+        } else {
+            String query = "SELECT * FROM " + TABLE_TRACKS +
+                    " WHERE " + KEY_ARTIST_ID + " = " + artistId +
+                    " ORDER BY " + KEY_TRACK_ID + "ASC;";
+            return tracksProvider(query);
+        }
+    }
+
+
+    private ArrayList<MenuItem> tracksProvider(String query){
+        SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery(query, null);
+
         if(c != null){
             c.moveToFirst();
+            ArrayList<MenuItem> res = new ArrayList<>();
             while (!c.isAfterLast()) {
                 String name = c.getString(c.getColumnIndex(KEY_TRACK_NAME));
                 String path = c.getString(c.getColumnIndex(KEY_TRACK_PATH));
@@ -491,8 +538,41 @@ public class DBHelper extends SQLiteOpenHelper {
                 c.moveToNext();
             }
             c.close();
+            db.close();
+            return res;
+        } else {
+            db.close();
+            return null;
         }
-        db.close();
-        return res;
+    }
+
+
+    public int getTracksCount(){
+        String query = "SELECT COUNT(" + KEY_TRACK_ID + ") FROM " + TABLE_TRACKS;
+        return itemCounter(query);
+    }
+
+    public int getTracksCount(AlbumItem album){
+        long albumId = albumExists(album);
+
+        if (albumId == -1){
+            return 0;
+        } else {
+            String query = "SELECT COUNT(" + KEY_TRACK_ID + ") FROM " + TABLE_TRACKS +
+                    " WHERE " + KEY_ALBUM_ID + " = " + albumId;
+            return itemCounter(query);
+        }
+    }
+
+    public int getTracksCount(ArtistItem artist){
+        long artistId = artistExists(artist);
+
+        if(artistId == -1){
+            return 0;
+        } else {
+            String query = "SELECT COUNT(" + KEY_TRACK_ID + ") FROM " + TABLE_TRACKS +
+                    " WHERE " + KEY_ARTIST_ID + " = " + artistId;
+            return itemCounter(query);
+        }
     }
 }

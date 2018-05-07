@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
         homeItems = new ArrayList<>();
         homeItems.add(new HomeScreenItem("Artists"));
         homeItems.add(new HomeScreenItem("Albums"));
-        homeItems.add(new HomeScreenItem("Songs"));
+        homeItems.add(new HomeScreenItem("Tracks"));
         homeItems.add(new HomeScreenItem("Playlists"));
         homeItems.add(new HomeScreenItem("Queue"));
     }

@@ -30,7 +30,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.Queue;
+import java.util.concurrent.TimeUnit;
 
 import android.os.Handler;
 import android.widget.Toast;
@@ -67,6 +69,9 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
             case ARTIST:
                 return 3;
+
+            case TRACK:
+                return 4;
 
             case PLAY_ALL:
                 return 5;
@@ -148,6 +153,11 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                 ((ViewHolderArtist) holder).setListeners();
                 return holder;
 
+            case 4:
+                Log.i(TAG, "Creating view holder for track items");
+                holder = new ViewHolderTrack(inflater.inflate(R.layout.track_item, parent, false));
+                return holder;
+
             case 5:
                 Log.i(TAG, "Creating view holder for play_all items");
                 holder = new ViewHolderPlayAll(inflater.inflate(R.layout.play_all_item, parent, false));
@@ -190,6 +200,18 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                  String albumsCnt = String.format(res.getString(R.string.albums_cnt),
                          ((ArtistItem) item).getAlbumsCnt());
                  ((ViewHolderArtist) holder).albumsCnt.setText(albumsCnt);
+                 break;
+
+             case TRACK:
+                 Log.i(TAG, "Binding track item");
+                 ((ViewHolderTrack) holder).trackName.setText(item.getName());
+                 String number = String.valueOf(((TrackItem) item).getTrackNumber());
+                 ((ViewHolderTrack) holder).trackNumber.setText(number);
+                 long _length = ((TrackItem) item).getLength();
+                 String length = String.format(Locale.getDefault(), "%d:%02d", TimeUnit.MILLISECONDS.toMinutes(_length),
+                         TimeUnit.MILLISECONDS.toSeconds(_length) -
+                                 TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(_length)));
+                 ((ViewHolderTrack) holder).lengthTV.setText(length);
                  break;
 
              case PLAY_ALL:
@@ -423,6 +445,23 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
 
 
+    /*--------------------------------------------------------------------------------------------*/
+    /*----------------------------------- Track View Holder --------------------------------------*/
+    /*--------------------------------------------------------------------------------------------*/
+    public class ViewHolderTrack extends RecyclerView.ViewHolder{
+        TextView trackNumber;
+        TextView trackName;
+        TextView lengthTV;
+
+        public ViewHolderTrack(View itemView){
+            super(itemView);
+            trackNumber = (TextView) itemView.findViewById(R.id.track_number);
+            trackName = (TextView) itemView.findViewById(R.id.track_name);
+            lengthTV = (TextView) itemView.findViewById(R.id.length);
+        }
+    }
+
+
 
     /*--------------------------------------------------------------------------------------------*/
     /*------------------------------- Change viewed items methods --------------------------------*/
@@ -454,6 +493,14 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                             }
                             updateItems(newItems);
                             break;
+
+                        case 2:
+                            ((MainActivity) parent).changeStateNext(MainActivity.STATES.TRACKS);
+                            newItems = ((MainActivity) parent).db.getTracksOf();
+                            for(MenuItem item : newItems){
+                                Log.i(TAG, item.getName() + ": " + String.valueOf(((TrackItem) item).getLength()));
+                            }
+                            updateItems(newItems);
                     }
                 }
 
