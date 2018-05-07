@@ -192,6 +192,10 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                          .load(cover)
                          .placeholder(R.mipmap.default_album)
                          .into(((ViewHolderAlbum) holder).cover);
+                 String _tracksCnt = String.format(Locale.getDefault(), res.getString(R.string.songs_cnt),
+                         ((MainActivity) parent).db.getTracksCount((AlbumItem) item));
+                 Log.i(TAG, _tracksCnt);
+                 ((ViewHolderAlbum) holder).songsNumber.setText(_tracksCnt);
                  break;
 
              case ARTIST:
@@ -200,6 +204,9 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                  String albumsCnt = String.format(res.getString(R.string.albums_cnt),
                          ((ArtistItem) item).getAlbumsCnt());
                  ((ViewHolderArtist) holder).albumsCnt.setText(albumsCnt);
+                 String tracksCnt = String.format(Locale.getDefault(), res.getString(R.string.songs_cnt),
+                         ((MainActivity) parent).db.getTracksCount((ArtistItem) item));
+                 ((ViewHolderArtist) holder).songsCnt.setText(tracksCnt);
                  break;
 
              case TRACK:
@@ -310,7 +317,7 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         public ViewHolderAlbum(View itemView) {
             super(itemView);
             this.albumName = (TextView) itemView.findViewById(R.id.album_name);
-            this.songsNumber = (TextView) itemView.findViewById(R.id.songs_count);
+            this.songsNumber = (TextView) itemView.findViewById(R.id.num_tracks);
             this.releaseYear = (TextView) itemView.findViewById(R.id.release_year);
             this.cover = (ImageView) itemView.findViewById(R.id.album_image);
             this.cv = (CardView) itemView.findViewById(R.id.album_cv);
@@ -360,7 +367,7 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
             @Override
             protected String doInBackground(AlbumItem... albums) {
                 AlbumItem album = albums[0];
-                ArtistItem artist = ((MainActivity) parent).db.getArtistByAlbum(album);
+                ArtistItem artist = ((MainActivity) parent).db.getArtistBy(album);
                 String url = downloadAndSaveCover(artist, album);
                 if(url != null){
                     return url;

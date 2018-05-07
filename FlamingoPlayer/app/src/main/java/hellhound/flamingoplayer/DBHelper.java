@@ -211,22 +211,37 @@ public class DBHelper extends SQLiteOpenHelper {
         return res;
     }
 
-    public ArtistItem getArtistByAlbum(AlbumItem album){
+    public ArtistItem getArtistBy(AlbumItem album){
         if(albumExists(album) >= 0){
-            SQLiteDatabase db = this.getReadableDatabase();
             String query = "SELECT " + KEY_ARTIST_NAME + " FROM " +TABLE_ARTISTS +
                     " WHERE " + KEY_ARTIST_ID + " = " + album.getArtistId();
-            Cursor c = db.rawQuery(query, null);
-            if(c.moveToFirst()){
-                String name = c.getString(c.getColumnIndex(KEY_ARTIST_NAME));
-                c.close();
-                db.close();
-                return new ArtistItem(name);
-            } else {
-                db.close();
-                return null;
-            }
+            return getArtistBy(query);
         } else {
+            return null;
+        }
+    }
+
+
+    public ArtistItem getArtistBy(TrackItem track){
+        if(trackExists(track) >= 0){
+            String query = "SELECT " + KEY_ARTIST_NAME + " FROM " +TABLE_ARTISTS +
+                    " WHERE " + KEY_ARTIST_ID + " = " + track.getArtistId();
+            return getArtistBy(query);
+        } else {
+            return null;
+        }
+    }
+
+    private ArtistItem getArtistBy(String query){
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(query, null);
+        if(c.moveToFirst()){
+            String name = c.getString(c.getColumnIndex(KEY_ARTIST_NAME));
+            c.close();
+            db.close();
+            return new ArtistItem(name);
+        } else {
+            db.close();
             return null;
         }
     }
@@ -353,6 +368,39 @@ public class DBHelper extends SQLiteOpenHelper {
             String query = "SELECT COUNT(" + KEY_ALBUM_NAME + ") FROM " + TABLE_ALBUMS +
                     " WHERE " + KEY_ARTIST_ID + " = " + artistId;
             return itemCounter(query);
+        }
+    }
+
+
+    public AlbumItem getAlbumBy(TrackItem track){
+        if(trackExists(track) >= 0){
+            String query = "SELECT " + KEY_ARTIST_NAME + " FROM " +TABLE_ARTISTS +
+                    " WHERE " + KEY_TRACK_ID + " = " + track.getArtistId();
+            return getAlbumBy(query);
+        } else {
+            return null;
+        }
+    }
+
+
+    private AlbumItem getAlbumBy(String query){
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(query, null);
+        if(c.moveToFirst()){
+            String name = c.getString(c.getColumnIndex(KEY_ARTIST_NAME));
+            long coverId = c.getLong(c.getColumnIndex(KEY_COVER_ID));
+            long artistId = c.getLong(c.getColumnIndex(KEY_ARTIST_ID));
+            int year = c.getInt(c.getColumnIndex(KEY_RELEASE_YEAR));
+            AlbumItem album = new AlbumItem(name);
+            album.setCoverId(coverId);
+            album.setArtistId(artistId);
+            album.setReleaseYear(year);
+            c.close();
+            db.close();
+            return album;
+        } else {
+            db.close();
+            return null;
         }
     }
 
@@ -558,6 +606,7 @@ public class DBHelper extends SQLiteOpenHelper {
         if (albumId == -1){
             return 0;
         } else {
+            Log.i(TAG, "Counting tracks of " + album.getName());
             String query = "SELECT COUNT(" + KEY_TRACK_ID + ") FROM " + TABLE_TRACKS +
                     " WHERE " + KEY_ALBUM_ID + " = " + albumId;
             return itemCounter(query);

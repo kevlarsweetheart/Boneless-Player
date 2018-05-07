@@ -39,7 +39,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                android:textSize="40sp"
+                android:textSize="30sp"
                 android:text="0"/>
 
             <TextView
@@ -52,7 +52,7 @@
                 android:layout_marginTop="8dp"
                 android:gravity="center_vertical"
                 android:text="Ting goes skra"
-                android:textSize="20sp"
+                android:textSize="15sp"
                 android:singleLine="true"
                 android:ellipsize="marquee"
                 android:marqueeRepeatLimit="marquee_forever"
@@ -70,6 +70,7 @@
                 android:layout_marginTop="8dp"
                 android:gravity="center_vertical"
                 android:text="4:30"
+                android:textSize="15sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
