@@ -161,6 +161,7 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
             case 5:
                 Log.i(TAG, "Creating view holder for play_all items");
                 holder = new ViewHolderPlayAll(inflater.inflate(R.layout.play_all_item, parent, false));
+                ((ViewHolderPlayAll) holder).setListeners();
                 return holder;
 
         }
@@ -207,6 +208,10 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                  String tracksCnt = String.format(Locale.getDefault(), res.getString(R.string.songs_cnt),
                          ((MainActivity) parent).db.getTracksCount((ArtistItem) item));
                  ((ViewHolderArtist) holder).songsCnt.setText(tracksCnt);
+                 if(((ArtistItem) item).extended){
+                     ((ViewHolderArtist) holder).songsCnt.setVisibility(View.VISIBLE);
+                     ((ViewHolderArtist) holder).albumsCnt.setVisibility(View.VISIBLE);
+                 }
                  break;
 
              case TRACK:
@@ -280,7 +285,6 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
         @Override
         public void onClick(View v) {
-            ArrayList<MenuItem> newItems;
             int position = getAdapterPosition();
             boolean extended = ((ArtistItem) items.get(position)).extended;
             if (!extended){
@@ -291,10 +295,13 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                 handleClicks(position, ACTIONS.NEXT);
             }
             else{
-                songsCnt.setVisibility(View.GONE);
-                albumsCnt.setVisibility(View.GONE);
-                ((ArtistItem) items.get(position)).extended = false;
-                tv.setSelected(false);
+                if (((MainActivity)parent).getState() == MainActivity.STATES.ALBUMS)
+                {
+                    songsCnt.setVisibility(View.GONE);
+                    albumsCnt.setVisibility(View.GONE);
+                    ((ArtistItem) items.get(position)).extended = false;
+                    tv.setSelected(false);
+                }
                 handleClicks(position, ACTIONS.BACK);
 
             }
@@ -330,7 +337,18 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
         @Override
         public void onClick(View v) {
-            Log.i(TAG, "Clicked on album");
+            int position = getAdapterPosition();
+            boolean extended = ((AlbumItem) items.get(position)).extended;
+            if (!extended){
+                ((AlbumItem) items.get(position)).extended= true;
+                albumName.setSelected(true);
+                handleClicks(position, ACTIONS.NEXT);
+            }
+            else{
+                ((AlbumItem) items.get(position)).extended = false;
+                albumName.setSelected(false);
+                handleClicks(position, ACTIONS.BACK);
+            }
         }
 
         @Override
@@ -439,7 +457,7 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     /*--------------------------------------------------------------------------------------------*/
     /*---------------------------------- Play All View Holder ------------------------------------*/
     /*--------------------------------------------------------------------------------------------*/
-    public class ViewHolderPlayAll extends RecyclerView.ViewHolder{
+    public class ViewHolderPlayAll extends RecyclerView.ViewHolder implements View.OnClickListener{
         TextView viewAll;
         TextView playShuffle;
 
@@ -447,6 +465,17 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
             super(itemView);
             this.viewAll = (TextView) itemView.findViewById(R.id.view_tacks);
             this.playShuffle = (TextView) itemView.findViewById(R.id.play_shuffled);
+        }
+
+        public void setListeners(){
+            viewAll.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View v) {
+            Log.i(TAG, "Clicked on viewAll button");
+            viewAll.setVisibility(View.GONE);
+            handleClicks(getAdapterPosition(), ACTIONS.NEXT);
         }
     }
 
@@ -523,7 +552,7 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                     ((MainActivity) parent).changeStateNext(MainActivity.STATES.ALBUMS);
                     MenuItem item = items.get(viewPosition);
                     newItems.add(item);
-                    newItems.add(new PlayAllItem());
+                    newItems.add(new PlayAllItem(MenuItem.TYPES.ARTIST));
                     newItems.addAll(((MainActivity) parent).db.getAlbumsOfArtist((ArtistItem) item));
                     updateItems(newItems);
                 }
@@ -561,10 +590,97 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                             ((MainActivity) parent).changeStateNext(MainActivity.STATES.ALBUMS);
                             break;
                     }
+                } else {
+                    ((MainActivity) parent).changeStateNext(MainActivity.STATES.TRACKS);
+                    MenuItem clickedItem = items.get(viewPosition);
+                    if (clickedItem.getType() == MenuItem.TYPES.PLAY_ALL){
+                        Log.i(TAG, "Clicked on viewAll, artist is " + (items.get(0)).getName());
+                        newItems = new ArrayList<>();
+                        newItems.add(items.get(0));
+                        MenuItem pItem = items.get(1);
+                        ((PlayAllItem) pItem).playAllVisible = false;
+                        notifyItemChanged(1);
+                        newItems.add(pItem);
+                        newItems.addAll(((MainActivity) parent).db.getTracksOf((ArtistItem) items.get(0)));
+                        updateItems(newItems);
+                    } else {
+                        Log.i(TAG, "Clicked on album " + clickedItem.getName());
+                        newItems = new ArrayList<>();
+                        newItems.add(items.get(viewPosition));
+                        MenuItem pItem;
+                        if(items.get(1).getType() == MenuItem.TYPES.PLAY_ALL){
+                            pItem = items.get(1);
+                        } else {
+                            pItem = new PlayAllItem(MenuItem.TYPES.ALBUM);
+                        }
+                        ((PlayAllItem) pItem).playAllVisible = false;
+                        notifyItemChanged(1);
+                        newItems.add(pItem);
+                        newItems.addAll(((MainActivity) parent).db.getTracksOf((AlbumItem) items.get(viewPosition)));
+                        updateItems(newItems);
+                    }
                 }
                 break;
 
             case TRACKS:
+
+                if (action == ACTIONS.BACK){
+                    ((MainActivity) parent).changeStateBack();
+                    MainActivity.STATES newState = ((MainActivity) parent).getState();
+                    switch (items.get(0).getType()){
+                        case ARTIST:
+                            newItems = new ArrayList<>();
+                            MenuItem artist = items.get(0);
+                            newItems.add(artist);
+                            MenuItem pItem = items.get(1);
+                            ((PlayAllItem) pItem).playAllVisible = true;
+                            notifyItemChanged(1);
+                            newItems.add(pItem);
+                            newItems.addAll(((MainActivity) parent).db.getAlbumsOfArtist((ArtistItem) artist));
+                            updateItems(newItems);
+                            break;
+
+                        case ALBUM:
+                            newItems = new ArrayList<>();
+                            if(((PlayAllItem) items.get(1)).spawnedBy == MenuItem.TYPES.ARTIST){
+                                MenuItem _artist = ((MainActivity) parent).db.getArtistBy((AlbumItem) items.get(viewPosition));
+                                ((ArtistItem) _artist).extended = true;
+                                newItems.add(_artist);
+                                MenuItem _pItem = items.get(1);
+                                ((PlayAllItem) _pItem).playAllVisible = true;
+                                notifyItemChanged(1);
+                                newItems.add(_pItem);
+                                ArrayList<MenuItem> albums = ((MainActivity) parent).db.getAlbumsOfArtist((ArtistItem) _artist);
+
+                                MenuItem currItem = items.get(viewPosition);
+                                ((AlbumItem) currItem).extended = false;
+                                for (int i = 0; i < albums.size(); i++){
+                                    if (((AlbumItem) currItem).getArtistId() == ((AlbumItem) albums.get(i)).getArtistId() &&
+                                            currItem.getName().equals(albums.get(i).getName())){
+                                        albums.set(i, currItem);
+                                        break;
+                                    }
+                                }
+
+                                newItems.addAll(albums);
+                                updateItems(newItems);
+
+                            } else {
+                                newItems = ((MainActivity) parent).db.getAllAlbums();
+                                MenuItem currItem = items.get(viewPosition);
+                                ((AlbumItem) currItem).extended = false;
+                                for (int i = 0; i < newItems.size(); i++){
+                                    if (((AlbumItem) currItem).getArtistId() == ((AlbumItem) newItems.get(i)).getArtistId() &&
+                                            currItem.getName().equals(newItems.get(i).getName())){
+                                        newItems.set(i, currItem);
+                                        break;
+                                    }
+                                }
+                                updateItems(newItems);
+                            }
+                            break;
+                    }
+                }
                 break;
 
             case PLAYLISTS:

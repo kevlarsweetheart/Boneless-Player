@@ -2,7 +2,7 @@ package hellhound.flamingoplayer;
 
 public class MenuItem {
     private String name;
-    public enum TYPES {HOME, TRACK, ALBUM, ARTIST, PATH, PLAY_ALL}
+    public enum TYPES {HOME, TRACK, ALBUM, ARTIST, PATH, PLAY_ALL, DUMMY}
     protected TYPES type;
     private static int cnt = -2147483648;
     private int itemId;

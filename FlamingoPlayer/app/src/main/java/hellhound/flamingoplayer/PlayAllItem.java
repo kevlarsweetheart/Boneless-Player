@@ -4,12 +4,14 @@ public class PlayAllItem extends MenuItem {
 
     boolean shuffleVisible;
     boolean playAllVisible;
+    TYPES spawnedBy;
 
-    public PlayAllItem() {
+    public PlayAllItem(TYPES spawnedBy) {
         super(DEFAULT_NAME);
         this.type = TYPES.PLAY_ALL;
         shuffleVisible = true;
         playAllVisible = true;
+        this.spawnedBy = spawnedBy;
     }
 
     public boolean isShuffleVisible() {

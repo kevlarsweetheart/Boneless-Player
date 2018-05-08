@@ -540,7 +540,7 @@ public class DBHelper extends SQLiteOpenHelper {
         } else {
             String query = "SELECT * FROM " + TABLE_TRACKS +
                     " WHERE " + KEY_ALBUM_ID + " = " + albumId +
-                    " ORDER BY " + KEY_TRACK_ID + "ASC;";
+                    " ORDER BY " + KEY_TRACK_NUMBER + " ASC;";
             return tracksProvider(query);
         }
     }
@@ -554,13 +554,14 @@ public class DBHelper extends SQLiteOpenHelper {
         } else {
             String query = "SELECT * FROM " + TABLE_TRACKS +
                     " WHERE " + KEY_ARTIST_ID + " = " + artistId +
-                    " ORDER BY " + KEY_TRACK_ID + "ASC;";
+                    " ORDER BY " + KEY_TRACK_NAME + " ASC;";
             return tracksProvider(query);
         }
     }
 
 
     private ArrayList<MenuItem> tracksProvider(String query){
+        Log.i(TAG, query);
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery(query, null);
 
