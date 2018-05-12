@@ -33,7 +33,7 @@ public class MusicService extends Service {
 
     private static final String TAG = "ExoDebug";
 
-    private final IBinder binder = new Binder();
+    private final IBinder binder = new LocalBinder();
     private SimpleExoPlayer player;
     private boolean isPlaying = false;
     int playlistLen = 0;
@@ -45,10 +45,11 @@ public class MusicService extends Service {
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
+        Log.i(TAG, "Binding");
         return binder;
     }
 
-    public class CustomBinder extends Binder{
+    public class LocalBinder extends Binder{
         MusicService getService(){
             return MusicService.this;
         }
@@ -206,7 +207,7 @@ public class MusicService extends Service {
         return isPlaying;
     }
 
-    public void next(){
+    public void nextTrack(){
         long position = player.getCurrentWindowIndex();
         Log.i(TAG, "Current position: " + String.valueOf(position));
         if(position < playlistLen - 1){
@@ -214,7 +215,7 @@ public class MusicService extends Service {
         }
     }
 
-    public void prev(){
+    public void prevTrack(){
         long ms = player.getContentPosition();
         Log.i(TAG, String.valueOf(ms) + "ms");
         if(ms > 3000){

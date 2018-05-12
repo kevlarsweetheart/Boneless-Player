@@ -7,6 +7,9 @@ public class TrackItem extends MenuItem {
     long albumId;
     long artistId;
     int length;
+    String albumName = "";
+    String artistName = "";
+    String coverPath = "";
 
 
     public TrackItem(String name) {
@@ -53,4 +56,6 @@ public class TrackItem extends MenuItem {
     public void setLength(int length) {
         this.length = length;
     }
+
+
 }

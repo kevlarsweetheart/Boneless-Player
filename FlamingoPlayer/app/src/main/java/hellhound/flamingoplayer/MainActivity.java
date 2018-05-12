@@ -148,7 +148,8 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            MusicService.CustomBinder binder = (MusicService.CustomBinder) service;
+            Log.i(TAG, "Connected?");
+            MusicService.LocalBinder binder = (MusicService.LocalBinder) service;
             musicService = binder.getService();
             isBound = true;
             Log.i(TAG, "onServiceConnected");
@@ -160,5 +161,4 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
             isBound = false;
         }
     };
-
 }
