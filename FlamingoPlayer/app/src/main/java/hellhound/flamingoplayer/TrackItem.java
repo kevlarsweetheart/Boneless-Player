@@ -57,5 +57,27 @@ public class TrackItem extends MenuItem {
         this.length = length;
     }
 
+    public String getAlbumName() {
+        return albumName;
+    }
 
+    public void setAlbumName(String albumName) {
+        this.albumName = albumName;
+    }
+
+    public String getArtistName() {
+        return artistName;
+    }
+
+    public void setArtistName(String artistName) {
+        this.artistName = artistName;
+    }
+
+    public String getCoverPath() {
+        return coverPath;
+    }
+
+    public void setCoverPath(String coverPath) {
+        this.coverPath = coverPath;
+    }
 }

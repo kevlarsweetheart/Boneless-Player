@@ -20,7 +20,7 @@ public class TopHeader extends Fragment {
     TopHeaderListener activityCommander;
 
     public interface TopHeaderListener{
-        public void backButtonClicked();
+        void backButtonClicked();
     }
 
     @Override

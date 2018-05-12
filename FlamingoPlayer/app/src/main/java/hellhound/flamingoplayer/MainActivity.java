@@ -16,7 +16,7 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.Stack;
 
-public class MainActivity extends AppCompatActivity implements TopHeader.TopHeaderListener{
+public class MainActivity extends AppCompatActivity implements TopHeader.TopHeaderListener, PlayControls.PlayControlsListener{
 
     private final static String TAG = "db_debug";
     private static ArrayList<MenuItem> homeItems;
@@ -28,6 +28,7 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
     private Stack<STATES> state;
     private TopHeader topHeader;
     private PlayControls playControls;
+    private PlaylistItem currentPlayList;
 
     //Service fields
     private MusicService musicService;
@@ -53,6 +54,7 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
 
         //Setting up RecyclerView, Database and States stack
         setHomeItems();
+        currentPlayList = new PlaylistItem("Queue");
         state = new Stack<>();
         state.push(STATES.HOME);
         db = DBHelper.getInstance(getApplicationContext());
@@ -131,6 +133,11 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
         topHeader.changeTitleText(newState);
     }
 
+
+    /*--------------------------------------------------------------------------------------------*/
+    /*----------------------------------- Methods for Fragments ----------------------------------*/
+    /*--------------------------------------------------------------------------------------------*/
+
     @Override
     public void backButtonClicked() {
         while (getState() != STATES.HOME){
@@ -140,6 +147,10 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
         adapter.handleClicks(1, HomeScreenAdapter.ACTIONS.BACK);
     }
 
+    @Override
+    public void controlButtonClicked(PlayControls.CONTROLS action) {
+
+    }
 
     /*--------------------------------------------------------------------------------------------*/
     /*--------------------------------- Methods for MusicService ---------------------------------*/
