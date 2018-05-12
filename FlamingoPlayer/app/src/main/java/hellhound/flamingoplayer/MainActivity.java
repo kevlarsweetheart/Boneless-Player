@@ -1,9 +1,12 @@
 package hellhound.flamingoplayer;
 
-import android.database.Cursor;
-import android.database.sqlite.SQLiteOpenHelper;
-import android.net.Uri;
-import android.provider.MediaStore;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
+import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -24,14 +27,32 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
     public enum STATES {HOME, ARTISTS, ALBUMS, TRACKS, PLAYLISTS, CHARTS}
     private Stack<STATES> state;
     private TopHeader topHeader;
+    private PlayControls playControls;
+
+    //Service fields
+    private MusicService musicService;
+    private boolean isBound = false;
+    private BroadcastReceiver broadcastReceiver;
+    public final static String BROADCAST_ACTION = "playservice";
+
+    public final static int TASK_PROGRESS = 0;
+    public final static String PARAM_PROGRESS = "progress";
+    public final static String PARAM_MAX = "max";
+    public final static String PARAM_TASK = "task";
+
+    public final static int TASK_INFO = 1;
+    public final static String PARAM_TRACK_NUM = "track_number";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        setHomeItems();
         topHeader = (TopHeader) getSupportFragmentManager().findFragmentById(R.id.fragment);
+        playControls = (PlayControls) getSupportFragmentManager().findFragmentById(R.id.fragment2);
+
+        //Setting up RecyclerView, Database and States stack
+        setHomeItems();
         state = new Stack<>();
         state.push(STATES.HOME);
         db = DBHelper.getInstance(getApplicationContext());
@@ -43,6 +64,31 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
         adapter = new HomeScreenAdapter(this, homeItems);
         recyclerView.setAdapter(adapter);
         db.close();
+
+        //Setting up MusicService
+        Intent musicIntent = new Intent(this, MusicService.class);
+        bindService(musicIntent, serviceConnection, Context.BIND_AUTO_CREATE);
+        broadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                int task = intent.getIntExtra(PARAM_TASK, 0);
+                switch (task){
+                    case TASK_PROGRESS:
+                        int progress = intent.getIntExtra(PARAM_PROGRESS, 0);
+                        int max = intent.getIntExtra(PARAM_MAX, 0);
+                        //TODO
+                        break;
+
+                    case TASK_INFO:
+                        int num = intent.getIntExtra(PARAM_TRACK_NUM, 0);
+                        //TODO
+                        break;
+                }
+
+            }
+        };
+        IntentFilter intentFilter = new IntentFilter(BROADCAST_ACTION);
+        registerReceiver(broadcastReceiver, intentFilter);
     }
 
 
@@ -93,4 +139,26 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
         changeStateNext(STATES.ARTISTS);
         adapter.handleClicks(1, HomeScreenAdapter.ACTIONS.BACK);
     }
+
+
+    /*--------------------------------------------------------------------------------------------*/
+    /*--------------------------------- Methods for MusicService ---------------------------------*/
+    /*--------------------------------------------------------------------------------------------*/
+
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            MusicService.CustomBinder binder = (MusicService.CustomBinder) service;
+            musicService = binder.getService();
+            isBound = true;
+            Log.i(TAG, "onServiceConnected");
+
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            isBound = false;
+        }
+    };
+
 }

@@ -20,6 +20,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.ImageView;
 import com.bumptech.glide.Glide;
+import com.google.android.exoplayer2.source.ConcatenatingMediaSource;
 
 import java.io.File;
 import java.io.FileOutputStream;
