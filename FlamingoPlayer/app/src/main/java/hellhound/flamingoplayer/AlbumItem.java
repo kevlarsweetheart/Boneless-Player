@@ -6,6 +6,7 @@ public class AlbumItem extends MenuItem {
     private long coverId;   //For foreign keys
     private int releaseYear;
     public boolean extended = false;
+    private String artistName = "";
 
     public AlbumItem(String name) {
         super(name);
@@ -34,5 +35,13 @@ public class AlbumItem extends MenuItem {
 
     public void setCoverId(long coverId) {
         this.coverId = coverId;
+    }
+
+    public String getArtistName() {
+        return artistName;
+    }
+
+    public void setArtistName(String artistName) {
+        this.artistName = artistName;
     }
 }

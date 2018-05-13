@@ -374,8 +374,9 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public AlbumItem getAlbumBy(TrackItem track){
         if(trackExists(track) >= 0){
-            String query = "SELECT " + KEY_ARTIST_NAME + " FROM " +TABLE_ARTISTS +
-                    " WHERE " + KEY_TRACK_ID + " = " + track.getArtistId();
+            String query = "SELECT * FROM " + TABLE_ALBUMS +
+                    " WHERE " + KEY_ALBUM_ID + " = " + track.getAlbumId();
+            Log.i(TAG, query);
             return getAlbumBy(query);
         } else {
             return null;
@@ -387,7 +388,7 @@ public class DBHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery(query, null);
         if(c.moveToFirst()){
-            String name = c.getString(c.getColumnIndex(KEY_ARTIST_NAME));
+            String name = c.getString(c.getColumnIndex(KEY_ALBUM_NAME));
             long coverId = c.getLong(c.getColumnIndex(KEY_COVER_ID));
             long artistId = c.getLong(c.getColumnIndex(KEY_ARTIST_ID));
             int year = c.getInt(c.getColumnIndex(KEY_RELEASE_YEAR));

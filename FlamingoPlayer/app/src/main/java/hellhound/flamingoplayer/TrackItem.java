@@ -62,7 +62,7 @@ public class TrackItem extends MenuItem {
     }
 
     public void setAlbumName(String albumName) {
-        this.albumName = albumName;
+        this.albumName = this.albumName.replaceAll(this.albumName, albumName);
     }
 
     public String getArtistName() {

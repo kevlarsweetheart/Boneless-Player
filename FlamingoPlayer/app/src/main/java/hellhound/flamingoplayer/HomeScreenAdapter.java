@@ -525,16 +525,28 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                             newItems = ((MainActivity) parent).db.getAllAlbums();
                             Log.i(TAG, "Got albums");
                             for(MenuItem item : newItems){
-                                Log.i(TAG, item.getName() + ": " + String.valueOf(((AlbumItem) item).getReleaseYear()));
+                                ((AlbumItem) item).setArtistName(((MainActivity) parent).db
+                                            .getArtistBy((AlbumItem) item).getName());
+                                Log.i(TAG, item.getName() + ": " + String.valueOf(((AlbumItem) item).getReleaseYear()) +
+                                " by " + ((AlbumItem) item).getArtistName());
                             }
                             updateItems(newItems);
                             break;
 
                         case 2:
                             ((MainActivity) parent).changeStateNext(MainActivity.STATES.TRACKS);
+                            Log.i(TAG, "Fetching tracks");
                             newItems = ((MainActivity) parent).db.getTracksOf();
                             for(MenuItem item : newItems){
-                                Log.i(TAG, item.getName() + ": " + String.valueOf(((TrackItem) item).getLength()));
+                                ((TrackItem) item).setArtistName(((MainActivity) parent).db
+                                            .getArtistBy((TrackItem) item).getName());
+                                AlbumItem correspAlbum = ((MainActivity) parent).db
+                                            .getAlbumBy((TrackItem) item);
+                                ((TrackItem) item).setAlbumName(correspAlbum.getName());
+                                ((TrackItem) item).setCoverPath(((MainActivity) parent).db
+                                            .getCoverById(correspAlbum.getCoverId()));
+                                Log.i(TAG, item.getName() + ": " + ((TrackItem) item).getAlbumName() +
+                                            " - " + ((TrackItem) item).getArtistName());
                             }
                             updateItems(newItems);
                     }
@@ -551,9 +563,13 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                     newItems = new ArrayList<>();
                     ((MainActivity) parent).changeStateNext(MainActivity.STATES.ALBUMS);
                     MenuItem item = items.get(viewPosition);
+                    ArrayList<MenuItem> newAlbums = ((MainActivity) parent).db.getAlbumsOfArtist((ArtistItem) item);
+                    for(MenuItem album : newAlbums){
+                        ((AlbumItem) album).setArtistName(item.getName());
+                    }
                     newItems.add(item);
                     newItems.add(new PlayAllItem(MenuItem.TYPES.ARTIST));
-                    newItems.addAll(((MainActivity) parent).db.getAlbumsOfArtist((ArtistItem) item));
+                    newItems.addAll(newAlbums);
                     updateItems(newItems);
                 }
                 break;
@@ -596,17 +612,39 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                     if (clickedItem.getType() == MenuItem.TYPES.PLAY_ALL){
                         Log.i(TAG, "Clicked on viewAll, artist is " + (items.get(0)).getName());
                         newItems = new ArrayList<>();
+                        ArrayList<MenuItem> newTracks = ((MainActivity) parent).db.getTracksOf((ArtistItem) items.get(0));
+                        for(MenuItem track : newTracks){
+                            ((TrackItem) track).setArtistName(items.get(0).getName());
+                            AlbumItem correspAlbum = ((MainActivity) parent).db
+                                    .getAlbumBy((TrackItem) track);
+                            ((TrackItem) track).setArtistName(correspAlbum.getName());
+                            ((TrackItem) track).setCoverPath(((MainActivity) parent).db
+                                    .getCoverById(correspAlbum.getCoverId()));
+                        }
                         newItems.add(items.get(0));
                         MenuItem pItem = items.get(1);
                         ((PlayAllItem) pItem).playAllVisible = false;
                         notifyItemChanged(1);
                         newItems.add(pItem);
-                        newItems.addAll(((MainActivity) parent).db.getTracksOf((ArtistItem) items.get(0)));
+
+                        newItems.addAll(newTracks);
                         updateItems(newItems);
                     } else {
                         Log.i(TAG, "Clicked on album " + clickedItem.getName());
                         newItems = new ArrayList<>();
-                        newItems.add(items.get(viewPosition));
+                        ArrayList<MenuItem> newTracks = ((MainActivity) parent).db.getTracksOf((AlbumItem) clickedItem);
+                        for(MenuItem item : newItems){
+                            Log.i(TAG, "Setting additional info");
+                            ((TrackItem) item).setAlbumName(clickedItem.getName());
+                            Log.i(TAG, "Album name set");
+                            ((TrackItem) item).setCoverPath(((MainActivity) parent).db
+                                        .getCoverById(((AlbumItem) clickedItem).getCoverId()));
+                            Log.i(TAG, "Cover set");
+                            ((TrackItem) item).setAlbumName(((MainActivity) parent).db
+                                        .getArtistBy((TrackItem) item).getName());
+                            Log.i(TAG, "Artist name set");
+                        }
+                        newItems.add(clickedItem);
                         MenuItem pItem;
                         if(items.get(1).getType() == MenuItem.TYPES.PLAY_ALL){
                             pItem = items.get(1);
@@ -616,7 +654,7 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                         ((PlayAllItem) pItem).playAllVisible = false;
                         notifyItemChanged(1);
                         newItems.add(pItem);
-                        newItems.addAll(((MainActivity) parent).db.getTracksOf((AlbumItem) items.get(viewPosition)));
+                        newItems.addAll(newTracks);
                         updateItems(newItems);
                     }
                 }
@@ -645,11 +683,6 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                             if(((PlayAllItem) items.get(1)).spawnedBy == MenuItem.TYPES.ARTIST){
                                 MenuItem _artist = ((MainActivity) parent).db.getArtistBy((AlbumItem) items.get(viewPosition));
                                 ((ArtistItem) _artist).extended = true;
-                                newItems.add(_artist);
-                                MenuItem _pItem = items.get(1);
-                                ((PlayAllItem) _pItem).playAllVisible = true;
-                                notifyItemChanged(1);
-                                newItems.add(_pItem);
                                 ArrayList<MenuItem> albums = ((MainActivity) parent).db.getAlbumsOfArtist((ArtistItem) _artist);
 
                                 MenuItem currItem = items.get(viewPosition);
@@ -658,9 +691,15 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                                     if (((AlbumItem) currItem).getArtistId() == ((AlbumItem) albums.get(i)).getArtistId() &&
                                             currItem.getName().equals(albums.get(i).getName())){
                                         albums.set(i, currItem);
-                                        break;
+                                    } else {
+                                        ((AlbumItem) albums.get(i)).setArtistName(_artist.getName());
                                     }
                                 }
+                                newItems.add(_artist);
+                                MenuItem _pItem = items.get(1);
+                                ((PlayAllItem) _pItem).playAllVisible = true;
+                                notifyItemChanged(1);
+                                newItems.add(_pItem);
 
                                 newItems.addAll(albums);
                                 updateItems(newItems);
@@ -673,7 +712,10 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                                     if (((AlbumItem) currItem).getArtistId() == ((AlbumItem) newItems.get(i)).getArtistId() &&
                                             currItem.getName().equals(newItems.get(i).getName())){
                                         newItems.set(i, currItem);
-                                        break;
+                                    } else {
+                                        MenuItem currentAlbum = newItems.get(i);
+                                        ((AlbumItem) currentAlbum).setArtistName(((MainActivity) parent).db
+                                                    .getArtistBy((AlbumItem) currentAlbum).getName());
                                     }
                                 }
                                 updateItems(newItems);
