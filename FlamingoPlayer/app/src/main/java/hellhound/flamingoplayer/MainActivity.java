@@ -196,9 +196,6 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
     public void setNewPlaylist(ArrayList<MenuItem> items, int currentTrack){
         currentPlayList.clearTracks();
         currentPlayList.setTracks(items, currentTrack);
-        if(musicService.isPlaying){
-            musicService.play(false);
-        }
         musicService.prepareTracks(currentPlayList.getTracksPaths());
         musicService.seekToWindow(currentPlayList.getCurrentTrack());
         Log.i(TAG, "Prepared player");

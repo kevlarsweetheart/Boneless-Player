@@ -65,6 +65,7 @@ public class MusicService extends Service {
     public void initPlayer(){
         player = ExoPlayerFactory.newSimpleInstance(this, new DefaultTrackSelector());
         player.addListener(eventListener);
+        source = new DynamicConcatenatingMediaSource();
         handler = new Handler();
         Log.i(TAG, "Player inited");
     }
@@ -250,10 +251,10 @@ public class MusicService extends Service {
     }
 
     public void prepareTracks(ArrayList<String> urls){
-        player = ExoPlayerFactory.newSimpleInstance(this, new DefaultTrackSelector());
-        player.addListener(eventListener);
+        player.stop();
         ArrayList<MediaSource> audioSources = new ArrayList<>();
         for (String url : urls){
+            Log.i(TAG, url);
             Uri uri = Uri.fromFile(new File(url));
             Log.i(TAG, uri.getPath());
             DataSpec dataSpec = new DataSpec(uri);
@@ -275,9 +276,7 @@ public class MusicService extends Service {
             audioSources.add(source);
         }
 
-        if(source != null){
-            source.releaseSource();
-        }
+
         source = new DynamicConcatenatingMediaSource();
         source.addMediaSources(audioSources);
         playlistLen = source.getSize();
