@@ -16,19 +16,22 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.Stack;
 
-public class MainActivity extends AppCompatActivity implements TopHeader.TopHeaderListener, PlayControls.PlayControlsListener{
+public class MainActivity extends AppCompatActivity implements TopHeader.TopHeaderListener, PlayControls.PlayControlsListener,
+        CenterPlayer.CenterPlayerListener{
 
     private final static String TAG = "db_debug";
     private static ArrayList<MenuItem> homeItems;
     private RecyclerView recyclerView;
-    private RecyclerView.LayoutManager layoutManager;
+    private RecyclerView.LayoutManager layoutManagerVertical;
     private HomeScreenAdapter adapter;
     public DBHelper db;
     public enum STATES {HOME, ARTISTS, ALBUMS, TRACKS, PLAYLISTS, CHARTS}
     private Stack<STATES> state;
     private TopHeader topHeader;
     private PlayControls playControls;
+    private CenterPlayer centerPlayer;
     private PlaylistItem currentPlayList;
+    private boolean playerIsHidden = true;
 
     //Service fields
     private MusicService musicService;
@@ -51,6 +54,7 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
         setContentView(R.layout.activity_main);
         topHeader = (TopHeader) getSupportFragmentManager().findFragmentById(R.id.fragment);
         playControls = (PlayControls) getSupportFragmentManager().findFragmentById(R.id.fragment2);
+        centerPlayer = (CenterPlayer) getSupportFragmentManager().findFragmentById(R.id.fragment3);
 
         //Setting up RecyclerView, Database and States stack
         setHomeItems();
@@ -61,8 +65,8 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
 
 
         recyclerView = (RecyclerView) findViewById(R.id.rv);
-        layoutManager = new LinearLayoutManager(this);
-        recyclerView.setLayoutManager(layoutManager);
+        layoutManagerVertical = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(layoutManagerVertical);
         adapter = new HomeScreenAdapter(this, homeItems);
         recyclerView.setAdapter(adapter);
         db.close();
@@ -79,13 +83,13 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
                         int progress = intent.getIntExtra(PARAM_PROGRESS, 0);
                         int max = intent.getIntExtra(PARAM_MAX, 0);
                         topHeader.setProgressSquare(progress, max);
+                        centerPlayer.setTime(progress, max);
                         break;
 
                     case TASK_INFO:
                         int num = intent.getIntExtra(PARAM_TRACK_NUM, 0);
                         currentPlayList.setCurrentTrack(num);
                         playControls.setTrack(currentPlayList.getTrack(num));
-                        //TODO
                         break;
                 }
 
@@ -109,6 +113,18 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
         return homeItems;
     }
 
+
+    @Override
+    protected void onDestroy() {
+        musicService.onDestroy();
+        super.onDestroy();
+    }
+
+    @Override
+    protected void onStop() {
+        musicService.onDestroy();
+        super.onStop();
+    }
 
     /*--------------------------------------------------------------------------------------------*/
     /*------------------------------- Methods for state managing ---------------------------------*/
@@ -164,6 +180,13 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
                 playPrev();
                 break;
 
+        }
+    }
+
+    @Override
+    public void seekBarChanged(int progress) {
+        if(currentPlayList.getSize() > 0){
+            musicService.setProgress(progress);
         }
     }
 

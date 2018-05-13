@@ -56,6 +56,12 @@ public class MusicService extends Service {
         return binder;
     }
 
+    @Override
+    public void onDestroy() {
+        player.stop();
+        super.onDestroy();
+    }
+
     public class LocalBinder extends Binder{
         MusicService getService(){
             return MusicService.this;
