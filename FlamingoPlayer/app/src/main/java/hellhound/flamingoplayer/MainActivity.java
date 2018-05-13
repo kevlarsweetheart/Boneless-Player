@@ -149,7 +149,11 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
 
     @Override
     public void controlButtonClicked(PlayControls.CONTROLS action) {
-
+        switch (action){
+            case PLAY:
+                play();
+                break;
+        }
     }
 
     /*--------------------------------------------------------------------------------------------*/
@@ -162,6 +166,7 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
             Log.i(TAG, "Connected?");
             MusicService.LocalBinder binder = (MusicService.LocalBinder) service;
             musicService = binder.getService();
+            musicService.initPlayer();
             isBound = true;
             Log.i(TAG, "onServiceConnected");
 
@@ -172,4 +177,35 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
             isBound = false;
         }
     };
+
+    /*--------------------------------------------------------------------------------------------*/
+    /*----------------------------------- Methods for playback -----------------------------------*/
+    /*--------------------------------------------------------------------------------------------*/
+
+    public void setNewPlaylist(ArrayList<MenuItem> items, int currentTrack){
+        currentPlayList.clearTracks();
+        currentPlayList.setTracks(items, currentTrack);
+        if(musicService.isPlaying){
+            musicService.play(false);
+        }
+        musicService.prepareTracks(currentPlayList.getTracksPaths());
+        musicService.seekToWindow(currentPlayList.getCurrentTrack());
+        Log.i(TAG, "Prepared player");
+    }
+
+    public boolean play(){
+        if(currentPlayList.getSize() > 0){
+            return musicService.play();
+        } else {
+            return false;
+        }
+    }
+
+    public boolean play(boolean play){
+        if(currentPlayList.getSize() > 0) {
+            return musicService.play(play);
+        } else {
+            return false;
+        }
+    }
 }

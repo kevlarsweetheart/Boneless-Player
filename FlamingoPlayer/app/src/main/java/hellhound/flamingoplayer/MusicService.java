@@ -35,7 +35,7 @@ public class MusicService extends Service {
 
     private final IBinder binder = new LocalBinder();
     private SimpleExoPlayer player;
-    private boolean isPlaying = false;
+    public boolean isPlaying = false;
     int playlistLen = 0;
     DynamicConcatenatingMediaSource source;
 
@@ -59,6 +59,7 @@ public class MusicService extends Service {
         player = ExoPlayerFactory.newSimpleInstance(this, new DefaultTrackSelector());
         player.addListener(eventListener);
         handler = new Handler();
+        Log.i(TAG, "Player inited");
     }
 
     /*--------------------------------------------------------------------------------------------*/
@@ -207,6 +208,11 @@ public class MusicService extends Service {
         return isPlaying;
     }
 
+    public boolean play(boolean doPlay){
+        setPlayPause(doPlay);
+        return doPlay;
+    }
+
     public void nextTrack(){
         long position = player.getCurrentWindowIndex();
         Log.i(TAG, "Current position: " + String.valueOf(position));
@@ -236,7 +242,7 @@ public class MusicService extends Service {
         }
     }
 
-    private void prepareTracks(ArrayList<String> urls){
+    public void prepareTracks(ArrayList<String> urls){
         player = ExoPlayerFactory.newSimpleInstance(this, new DefaultTrackSelector());
         player.addListener(eventListener);
         ArrayList<MediaSource> audioSources = new ArrayList<>();
@@ -269,5 +275,9 @@ public class MusicService extends Service {
         source.addMediaSources(audioSources);
         playlistLen = source.getSize();
         player.prepare(source);
+    }
+
+    public void seekToWindow(int position){
+        player.seekTo(position, 0);
     }
 }

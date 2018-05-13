@@ -31,7 +31,13 @@ public class PlaylistItem extends MenuItem {
             tracks.clear();
         }
         tracks = filterTracks(items);
+        this.currentTrack = this.currentTrack - (items.size() - tracks.size());
         return tracks.size();
+    }
+
+    public int setTracks(ArrayList<MenuItem> items, int currentTrack){
+        this.currentTrack = currentTrack;
+        return setTracks(items);
     }
 
     private ArrayList<TrackItem> filterTracks(ArrayList<MenuItem> items){
@@ -54,5 +60,30 @@ public class PlaylistItem extends MenuItem {
 
     public ArrayList<TrackItem> getTracks() {
         return tracks;
+    }
+
+    public ArrayList<String> getTracksPaths(){
+        ArrayList<String> paths = new ArrayList<>();
+        for(TrackItem track : tracks){
+            paths.add(track.getPath());
+        }
+        return paths;
+    }
+
+    public void clearTracks(){
+        this.tracks.clear();
+        currentTrack = 0;
+    }
+
+    public int getSize(){
+        return tracks.size();
+    }
+
+    public int getCurrentTrack() {
+        return currentTrack;
+    }
+
+    public void setCurrentTrack(int currentTrack) {
+        this.currentTrack = currentTrack;
     }
 }

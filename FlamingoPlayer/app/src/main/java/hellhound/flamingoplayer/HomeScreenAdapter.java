@@ -156,6 +156,7 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
             case 4:
                 Log.i(TAG, "Creating view holder for track items");
                 holder = new ViewHolderTrack(inflater.inflate(R.layout.track_item, parent, false));
+                ((ViewHolderTrack) holder).setListeners();
                 return holder;
 
             case 5:
@@ -484,16 +485,29 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     /*--------------------------------------------------------------------------------------------*/
     /*----------------------------------- Track View Holder --------------------------------------*/
     /*--------------------------------------------------------------------------------------------*/
-    public class ViewHolderTrack extends RecyclerView.ViewHolder{
+    public class ViewHolderTrack extends RecyclerView.ViewHolder implements View.OnClickListener{
         TextView trackNumber;
         TextView trackName;
         TextView lengthTV;
+        CardView cv;
 
         public ViewHolderTrack(View itemView){
             super(itemView);
             trackNumber = (TextView) itemView.findViewById(R.id.track_number);
             trackName = (TextView) itemView.findViewById(R.id.track_name);
             lengthTV = (TextView) itemView.findViewById(R.id.length);
+            cv = (CardView) itemView.findViewById(R.id.track_cv);
+        }
+
+        public void setListeners(){
+            cv.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View v) {
+            Log.i(TAG, "Clicked on track");
+            ((MainActivity) parent).setNewPlaylist(items, getAdapterPosition());
+            ((MainActivity) parent).play(true);
         }
     }
 
