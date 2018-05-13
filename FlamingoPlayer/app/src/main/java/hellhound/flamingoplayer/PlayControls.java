@@ -81,6 +81,17 @@ public class PlayControls extends Fragment {
     public void setTrack(TrackItem track){
         trackView.setText(track.getName());
         String albumArtist = String.format("%1$s - %2$s", track.getArtistName(), track.getAlbumName());
-        trackView.setText(albumArtist);
+        artistAlbumView.setText(albumArtist);
+    }
+
+    public void setPlayButton(boolean isPlaying){
+        Context parent = getActivity();
+        if(parent != null){
+            if(isPlaying){
+                GlideApp.with(parent).load(R.mipmap.pause_button).into(playButton);
+            } else {
+                GlideApp.with(parent).load(R.mipmap.play_button).into(playButton);
+            }
+        }
     }
 }

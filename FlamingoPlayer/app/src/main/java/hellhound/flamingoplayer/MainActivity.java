@@ -83,6 +83,8 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
 
                     case TASK_INFO:
                         int num = intent.getIntExtra(PARAM_TRACK_NUM, 0);
+                        currentPlayList.setCurrentTrack(num);
+                        playControls.setTrack(currentPlayList.getTrack(num));
                         //TODO
                         break;
                 }
@@ -153,6 +155,15 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
             case PLAY:
                 play();
                 break;
+
+            case NEXT:
+                playNext();
+                break;
+
+            case PREV:
+                playPrev();
+                break;
+
         }
     }
 
@@ -195,7 +206,9 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
 
     public boolean play(){
         if(currentPlayList.getSize() > 0){
-            return musicService.play();
+            boolean isPlaying = musicService.play();
+            playControls.setPlayButton(isPlaying);
+            return isPlaying;
         } else {
             return false;
         }
@@ -203,9 +216,31 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
 
     public boolean play(boolean play){
         if(currentPlayList.getSize() > 0) {
-            return musicService.play(play);
+            boolean isPlaying = musicService.play(play);
+            playControls.setPlayButton(isPlaying);
+            return isPlaying;
         } else {
             return false;
+        }
+    }
+
+    public int playNext(){
+        if(currentPlayList.getSize() > 0) {
+            int nextTrack = musicService.nextTrack();
+            currentPlayList.setCurrentTrack(nextTrack);
+            return nextTrack;
+        } else {
+            return 0;
+        }
+    }
+
+    public int playPrev(){
+        if(currentPlayList.getSize() > 0) {
+            int nextTrack = musicService.prevTrack();
+            currentPlayList.setCurrentTrack(nextTrack);
+            return nextTrack;
+        } else {
+            return 0;
         }
     }
 }

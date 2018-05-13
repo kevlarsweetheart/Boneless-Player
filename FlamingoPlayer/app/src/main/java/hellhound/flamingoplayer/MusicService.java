@@ -213,24 +213,31 @@ public class MusicService extends Service {
         return doPlay;
     }
 
-    public void nextTrack(){
+    public int nextTrack(){
         long position = player.getCurrentWindowIndex();
         Log.i(TAG, "Current position: " + String.valueOf(position));
         if(position < playlistLen - 1){
             player.seekTo((int) position + 1, 0);
+            return (int)position + 1;
+        } else {
+            return (int)position;
         }
     }
 
-    public void prevTrack(){
+    public int prevTrack(){
         long ms = player.getContentPosition();
+        int pos = player.getCurrentWindowIndex();
         Log.i(TAG, String.valueOf(ms) + "ms");
         if(ms > 3000){
             player.seekTo(0);
+            return pos;
         } else {
-            int pos = player.getCurrentWindowIndex();
             Log.i(TAG, "Current position: " + String.valueOf(pos));
             if(pos > 0){
                 player.seekTo(pos - 1, 0);
+                return pos - 1;
+            } else {
+                return 0;
             }
         }
     }

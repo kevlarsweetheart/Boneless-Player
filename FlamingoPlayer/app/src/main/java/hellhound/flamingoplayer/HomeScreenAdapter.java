@@ -631,7 +631,7 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                             ((TrackItem) track).setArtistName(items.get(0).getName());
                             AlbumItem correspAlbum = ((MainActivity) parent).db
                                     .getAlbumBy((TrackItem) track);
-                            ((TrackItem) track).setArtistName(correspAlbum.getName());
+                            ((TrackItem) track).setAlbumName(correspAlbum.getName());
                             ((TrackItem) track).setCoverPath(((MainActivity) parent).db
                                     .getCoverById(correspAlbum.getCoverId()));
                         }
@@ -647,16 +647,13 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                         Log.i(TAG, "Clicked on album " + clickedItem.getName());
                         newItems = new ArrayList<>();
                         ArrayList<MenuItem> newTracks = ((MainActivity) parent).db.getTracksOf((AlbumItem) clickedItem);
-                        for(MenuItem item : newItems){
-                            Log.i(TAG, "Setting additional info");
+                        Log.i(TAG, clickedItem.getName());
+                        for(MenuItem item : newTracks){
                             ((TrackItem) item).setAlbumName(clickedItem.getName());
-                            Log.i(TAG, "Album name set");
                             ((TrackItem) item).setCoverPath(((MainActivity) parent).db
                                         .getCoverById(((AlbumItem) clickedItem).getCoverId()));
-                            Log.i(TAG, "Cover set");
-                            ((TrackItem) item).setAlbumName(((MainActivity) parent).db
+                            ((TrackItem) item).setArtistName(((MainActivity) parent).db
                                         .getArtistBy((TrackItem) item).getName());
-                            Log.i(TAG, "Artist name set");
                         }
                         newItems.add(clickedItem);
                         MenuItem pItem;
@@ -697,6 +694,8 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                             if(((PlayAllItem) items.get(1)).spawnedBy == MenuItem.TYPES.ARTIST){
                                 MenuItem _artist = ((MainActivity) parent).db.getArtistBy((AlbumItem) items.get(viewPosition));
                                 ((ArtistItem) _artist).extended = true;
+                                ((ArtistItem) _artist).setAlbumsCnt(((MainActivity) parent).db
+                                            .getAlbumsCount((ArtistItem) _artist));
                                 ArrayList<MenuItem> albums = ((MainActivity) parent).db.getAlbumsOfArtist((ArtistItem) _artist);
 
                                 MenuItem currItem = items.get(viewPosition);
