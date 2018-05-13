@@ -40,6 +40,13 @@ public class MusicService extends Service {
     DynamicConcatenatingMediaSource source;
 
     Handler handler;
+    private final Runnable updateProgressAction = new Runnable() {
+        @Override
+        public void run() {
+            updateProgress();
+        }
+    };
+
 
 
     @Nullable
@@ -147,13 +154,6 @@ public class MusicService extends Service {
             Log.i(TAG, "Y");
         }
     }
-
-    private final Runnable updateProgressAction = new Runnable() {
-        @Override
-        public void run() {
-            updateProgress();
-        }
-    };
 
     private void updateProgress(){
         int duration = player == null ? 0 : (int)player.getDuration();

@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
                     case TASK_PROGRESS:
                         int progress = intent.getIntExtra(PARAM_PROGRESS, 0);
                         int max = intent.getIntExtra(PARAM_MAX, 0);
-                        //TODO
+                        topHeader.setProgressSquare(progress, max);
                         break;
 
                     case TASK_INFO:

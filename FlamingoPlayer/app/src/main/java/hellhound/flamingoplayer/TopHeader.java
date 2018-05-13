@@ -5,17 +5,24 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Trace;
 import android.support.annotation.Nullable;
+import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.Transformation;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 public class TopHeader extends Fragment {
 
+    private static final String TAG = "main_activity";
     ImageView backButton;
     TextView topText;
+    View progressSquare;
+    View background;
 
     TopHeaderListener activityCommander;
 
@@ -43,9 +50,10 @@ public class TopHeader extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.top_header, container, false);
-        backButton = (ImageView) view.findViewById(R.id.back_button);
-        topText = (TextView) view.findViewById(R.id.top_text);
+        background = inflater.inflate(R.layout.top_header, container, false);
+        backButton = (ImageView) background.findViewById(R.id.back_button);
+        topText = (TextView) background.findViewById(R.id.top_text);
+        progressSquare = (View) background.findViewById(R.id.progress_square);
 
         backButton.setOnClickListener(
                 new View.OnClickListener() {
@@ -56,7 +64,7 @@ public class TopHeader extends Fragment {
                 }
         );
 
-        return view;
+        return background;
     }
 
     public boolean switchBackButton(MainActivity.STATES state){
@@ -94,6 +102,47 @@ public class TopHeader extends Fragment {
 
             case CHARTS:
                 topText.setText("Charts");
+        }
+    }
+
+    public void setProgressSquare(int progress, int max){
+        int maxWidth = background.getWidth();
+        int viewProgress = progress * maxWidth / max;
+
+        viewProgress = viewProgress < 10 ? 10 : viewProgress;
+        ResizeWidthAnimation anim = new ResizeWidthAnimation(progressSquare, viewProgress);
+        anim.setDuration(500);
+        progressSquare.startAnimation(anim);
+    }
+
+
+    public class ResizeWidthAnimation extends Animation {
+        private int mWidth;
+        private int mStartWidth;
+        private View mView;
+
+        public ResizeWidthAnimation(View view, int width) {
+            mView = view;
+            mWidth = width;
+            mStartWidth = view.getWidth();
+        }
+
+        @Override
+        protected void applyTransformation(float interpolatedTime, Transformation t) {
+            int newWidth = mStartWidth + (int) ((mWidth - mStartWidth) * interpolatedTime);
+
+            mView.getLayoutParams().width = newWidth;
+            mView.requestLayout();
+        }
+
+        @Override
+        public void initialize(int width, int height, int parentWidth, int parentHeight) {
+            super.initialize(width, height, parentWidth, parentHeight);
+        }
+
+        @Override
+        public boolean willChangeBounds() {
+            return true;
         }
     }
 
