@@ -277,6 +277,7 @@ public class MusicService extends Service {
                     return ds;
                 }
             };
+            @SuppressWarnings("deprecation")
             MediaSource source = new ExtractorMediaSource(ds.getUri(), factory,
                     new DefaultExtractorsFactory(), null, null);
             audioSources.add(source);
