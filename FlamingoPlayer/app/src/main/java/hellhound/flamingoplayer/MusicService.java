@@ -231,11 +231,11 @@ public class MusicService extends Service {
         }
     }
 
-    public int prevTrack(){
+    public int prevTrack(boolean force){
         long ms = player.getContentPosition();
         int pos = player.getCurrentWindowIndex();
         Log.i(TAG, String.valueOf(ms) + "ms");
-        if(ms > 3000){
+        if(ms > 3000 && !force){
             player.seekTo(0);
             return pos;
         } else {

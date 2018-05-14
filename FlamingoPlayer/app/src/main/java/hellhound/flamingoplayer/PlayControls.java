@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -17,11 +18,13 @@ public class PlayControls extends Fragment {
 
     ImageView nextButton, prevButton, playButton;
     TextView trackView, artistAlbumView;
+    ConstraintLayout textArea;
     public enum CONTROLS {PLAY, NEXT, PREV}
     PlayControlsListener activityCommander;
 
     public interface PlayControlsListener{
         void controlButtonClicked(CONTROLS action);
+        boolean openClosePlayer();
     }
 
     @Override
@@ -47,9 +50,9 @@ public class PlayControls extends Fragment {
         nextButton = view.findViewById(R.id.next_button);
         prevButton = view.findViewById(R.id.prev_button);
         playButton = view.findViewById(R.id.play_button);
-
         trackView = view.findViewById(R.id.track);
         artistAlbumView = view.findViewById(R.id.artist_album);
+        textArea = view.findViewById(R.id.text_area);
 
         nextButton.setOnClickListener(
                 new View.OnClickListener() {
@@ -72,6 +75,14 @@ public class PlayControls extends Fragment {
                     @Override
                     public void onClick(View v) {
                         activityCommander.controlButtonClicked(CONTROLS.PLAY);
+                    }
+                }
+        );
+        textArea.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        activityCommander.openClosePlayer();
                     }
                 }
         );

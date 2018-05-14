@@ -6,12 +6,24 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.graphics.Point;
 import android.os.IBinder;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.LinearSmoothScroller;
+import android.support.v7.widget.PagerSnapHelper;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.Display;
+import android.view.View;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.Animation;
+import android.view.animation.Interpolator;
+import android.view.animation.Transformation;
+import android.widget.LinearLayout;
 
 import java.util.ArrayList;
 import java.util.Stack;
@@ -19,11 +31,15 @@ import java.util.Stack;
 public class MainActivity extends AppCompatActivity implements TopHeader.TopHeaderListener, PlayControls.PlayControlsListener,
         CenterPlayer.CenterPlayerListener{
 
-    private final static String TAG = "db_debug";
+    private final static String TAG = "main_activity";
     private static ArrayList<MenuItem> homeItems;
     private RecyclerView recyclerView;
+    private RecyclerView playRecyclerView;
     private RecyclerView.LayoutManager layoutManagerVertical;
+    private RecyclerView.LayoutManager layoutManagerHorizontal;
+    private PagerSnapHelper snapHelper;
     private HomeScreenAdapter adapter;
+    private PlayerAdapter playerAdapter;
     public DBHelper db;
     public enum STATES {HOME, ARTISTS, ALBUMS, TRACKS, PLAYLISTS, CHARTS}
     private Stack<STATES> state;
@@ -31,7 +47,8 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
     private PlayControls playControls;
     private CenterPlayer centerPlayer;
     private PlaylistItem currentPlayList;
-    private boolean playerIsHidden = true;
+    private boolean playerIsHidden = false;
+    int screenHeight;
 
     //Service fields
     private MusicService musicService;
@@ -55,6 +72,11 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
         topHeader = (TopHeader) getSupportFragmentManager().findFragmentById(R.id.fragment);
         playControls = (PlayControls) getSupportFragmentManager().findFragmentById(R.id.fragment2);
         centerPlayer = (CenterPlayer) getSupportFragmentManager().findFragmentById(R.id.fragment3);
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        screenHeight = size.y;
+
 
         //Setting up RecyclerView, Database and States stack
         setHomeItems();
@@ -63,12 +85,41 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
         state.push(STATES.HOME);
         db = DBHelper.getInstance(getApplicationContext());
 
-
         recyclerView = (RecyclerView) findViewById(R.id.rv);
         layoutManagerVertical = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManagerVertical);
         adapter = new HomeScreenAdapter(this, homeItems);
         recyclerView.setAdapter(adapter);
+
+        snapHelper = new PagerSnapHelper();
+        playRecyclerView = (RecyclerView) findViewById(R.id.rvPlay);
+        layoutManagerHorizontal = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
+        playerAdapter = new PlayerAdapter(this, currentPlayList.getTracks());
+        playRecyclerView.setLayoutManager(layoutManagerHorizontal);
+        playRecyclerView.setAdapter(playerAdapter);
+        playRecyclerView.setTranslationY(screenHeight);
+        snapHelper.attachToRecyclerView(playRecyclerView);
+
+        playRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                if(dx >= 0){
+                    int lastCompVis = ((LinearLayoutManager) layoutManagerHorizontal).findLastCompletelyVisibleItemPosition();
+                    if((currentPlayList.getCurrentTrack() != lastCompVis) && (lastCompVis != -1)){
+                        playNext();
+                    }
+                } else {
+                    int firstCompVis = ((LinearLayoutManager) layoutManagerHorizontal).findFirstCompletelyVisibleItemPosition();
+                    if((currentPlayList.getCurrentTrack() != firstCompVis) && firstCompVis != -1){
+                        playPrev(true);
+                    }
+                }
+            }
+
+
+        });
+
+        switchToPlayer();
         db.close();
 
         //Setting up MusicService
@@ -78,6 +129,7 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
             @Override
             public void onReceive(Context context, Intent intent) {
                 int task = intent.getIntExtra(PARAM_TASK, 0);
+
                 switch (task){
                     case TASK_PROGRESS:
                         int progress = intent.getIntExtra(PARAM_PROGRESS, 0);
@@ -90,6 +142,7 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
                         int num = intent.getIntExtra(PARAM_TRACK_NUM, 0);
                         currentPlayList.setCurrentTrack(num);
                         playControls.setTrack(currentPlayList.getTrack(num));
+                        layoutManagerHorizontal.scrollToPosition(num);
                         break;
                 }
 
@@ -111,6 +164,30 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
 
     public  ArrayList<MenuItem> getHomeItems(){
         return homeItems;
+    }
+
+    public boolean switchToPlayer(){
+        if(playerIsHidden){
+            FragmentManager fm = getSupportFragmentManager();
+            fm.beginTransaction()
+                    .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
+                    .show(centerPlayer)
+                    .commit();
+            playerIsHidden = !playerIsHidden;
+            playRecyclerView.animate().translationY(0);
+            recyclerView.animate().translationY(-screenHeight);
+            return playerIsHidden;
+        } else {
+            FragmentManager fm = getSupportFragmentManager();
+            fm.beginTransaction()
+                    .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
+                    .hide(centerPlayer)
+                    .commit();
+            playerIsHidden = !playerIsHidden;
+            playRecyclerView.animate().translationY(screenHeight);
+            recyclerView.animate().translationY(0);
+            return playerIsHidden;
+        }
     }
 
 
@@ -177,7 +254,7 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
                 break;
 
             case PREV:
-                playPrev();
+                playPrev(false);
                 break;
 
         }
@@ -188,6 +265,11 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
         if(currentPlayList.getSize() > 0){
             musicService.setProgress(progress);
         }
+    }
+
+    @Override
+    public boolean openClosePlayer() {
+        return switchToPlayer();
     }
 
     /*--------------------------------------------------------------------------------------------*/
@@ -221,6 +303,8 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
         currentPlayList.setTracks(items, currentTrack);
         musicService.prepareTracks(currentPlayList.getTracksPaths());
         musicService.seekToWindow(currentPlayList.getCurrentTrack());
+        playerAdapter.setItems(currentPlayList.getTracks());
+        layoutManagerHorizontal.scrollToPosition(currentPlayList.getCurrentTrack());
         Log.i(TAG, "Prepared player");
     }
 
@@ -254,13 +338,43 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
         }
     }
 
-    public int playPrev(){
+    public int playPrev(boolean force){
         if(currentPlayList.getSize() > 0) {
-            int nextTrack = musicService.prevTrack();
+            int nextTrack = musicService.prevTrack(force);
             currentPlayList.setCurrentTrack(nextTrack);
             return nextTrack;
         } else {
             return 0;
         }
     }
+
+    /*--------------------------------------------------------------------------------------------*/
+    /*----------------------------------- Methods for animation ----------------------------------*/
+    /*--------------------------------------------------------------------------------------------*/
+
+    public void animateHeight(final View v, final int height){
+        final int initialHeight = v.getHeight();
+        int duration = 500;
+        Interpolator interpolator = new AccelerateInterpolator(2);
+        v.getLayoutParams().height = initialHeight;
+        v.requestLayout();
+        Animation a = new Animation() {
+            @Override
+            protected void applyTransformation(float interpolatedTime, Transformation t) {
+                Log.i(TAG, "InterpolatedTime: " + interpolatedTime);
+                Log.i(TAG, "Collapsing height: " + (initialHeight - (int) (height * interpolatedTime)));
+                v.getLayoutParams().height = initialHeight - (int) (height * interpolatedTime);
+                v.requestLayout();
+            }
+
+            @Override
+            public boolean willChangeBounds() {
+                return true;
+            }
+        };
+        a.setDuration(duration);
+        a.setInterpolator(interpolator);
+        v.startAnimation(a);
+    }
+
 }

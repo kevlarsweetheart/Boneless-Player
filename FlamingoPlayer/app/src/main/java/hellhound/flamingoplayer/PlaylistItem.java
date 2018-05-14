@@ -59,7 +59,13 @@ public class PlaylistItem extends MenuItem {
     }
 
     public ArrayList<TrackItem> getTracks() {
-        return tracks;
+        if (tracks.size() > 0) {
+            return tracks;
+        } else {
+            ArrayList<TrackItem> res = new ArrayList<>();
+            res.add(new TrackItem("Dummy"));
+            return res;
+        }
     }
 
     public ArrayList<String> getTracksPaths(){

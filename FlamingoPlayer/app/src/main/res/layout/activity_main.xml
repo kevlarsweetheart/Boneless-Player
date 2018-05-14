@@ -7,6 +7,30 @@
     android:background="@color/terracotta"
     tools:context=".MainActivity">
 
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rv"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="4dp"
+        android:layout_marginStart="4dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/fragment"
+        app:layout_constraintBottom_toTopOf="@+id/fragment3"
+        android:translationZ="2dp"/>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rvPlay"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="4dp"
+        android:layout_marginStart="4dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/fragment"
+        app:layout_constraintBottom_toTopOf="@+id/fragment3"
+        android:translationZ="2dp"/>
+
     <fragment
         android:id="@+id/fragment"
         android:name="hellhound.flamingoplayer.TopHeader"
@@ -18,7 +42,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:layout="@layout/top_header" />
+        tools:layout="@layout/top_header"
+        android:translationZ="1dp" />
 
     <fragment
         android:id="@+id/fragment2"
@@ -31,18 +56,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        tools:layout="@layout/play_control_panel" />
-
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/rv"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginEnd="4dp"
-        android:layout_marginStart="4dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/fragment"
-        app:layout_constraintBottom_toTopOf="@+id/fragment3"/>
+        tools:layout="@layout/play_control_panel"
+        android:translationZ="1dp"/>
 
     <fragment
         android:id="@+id/fragment3"
@@ -54,6 +69,7 @@
         app:layout_constraintBottom_toTopOf="@+id/fragment2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        tools:layout="@layout/center_player" />
+        tools:layout="@layout/center_player"
+        android:translationZ="1dp" />
 
 </android.support.constraint.ConstraintLayout>
