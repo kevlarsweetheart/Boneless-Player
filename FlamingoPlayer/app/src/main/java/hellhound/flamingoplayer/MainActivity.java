@@ -176,6 +176,7 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
             playerIsHidden = !playerIsHidden;
             playRecyclerView.animate().translationY(0);
             recyclerView.animate().translationY(-screenHeight);
+            topHeader.switchBackButton(STATES.ARTISTS);
             return playerIsHidden;
         } else {
             FragmentManager fm = getSupportFragmentManager();
@@ -186,7 +187,18 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
             playerIsHidden = !playerIsHidden;
             playRecyclerView.animate().translationY(screenHeight);
             recyclerView.animate().translationY(0);
+            topHeader.switchBackButton(getState());
             return playerIsHidden;
+        }
+    }
+
+
+    @Override
+    public void onBackPressed() {
+        if((getState() == STATES.HOME) && (playerIsHidden)){
+            super.onBackPressed();
+        } else {
+            backButtonClicked();
         }
     }
 
@@ -235,11 +247,17 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
 
     @Override
     public void backButtonClicked() {
-        while (getState() != STATES.HOME){
-            changeStateBack();
+        if(playerIsHidden)
+        {
+            while (getState() != STATES.HOME){
+                changeStateBack();
+            }
+            changeStateNext(STATES.ARTISTS);
+            adapter.handleClicks(1, HomeScreenAdapter.ACTIONS.BACK);
+        } else {
+            switchToPlayer();
         }
-        changeStateNext(STATES.ARTISTS);
-        adapter.handleClicks(1, HomeScreenAdapter.ACTIONS.BACK);
+
     }
 
     @Override

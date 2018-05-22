@@ -66,6 +66,7 @@ public class TopHeader extends Fragment {
         return background;
     }
 
+
     public boolean switchBackButton(MainActivity.STATES state){
         if (state != MainActivity.STATES.HOME){
             backButton.setVisibility(View.VISIBLE);
@@ -74,8 +75,8 @@ public class TopHeader extends Fragment {
             backButton.setVisibility(View.GONE);
             return false;
         }
-
     }
+
 
     public void changeTitleText(MainActivity.STATES state){
         switch (state){
