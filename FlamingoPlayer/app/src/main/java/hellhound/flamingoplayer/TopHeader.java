@@ -4,25 +4,29 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Trace;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.Transformation;
 import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 
-public class TopHeader extends Fragment {
+public class TopHeader extends Fragment implements PopupMenu.OnMenuItemClickListener{
 
     private static final String TAG = "main_activity";
     ImageView backButton;
     TextView topText;
     View progressSquare;
     View background;
+    ImageView settingsButton;
 
     TopHeaderListener activityCommander;
 
@@ -48,17 +52,30 @@ public class TopHeader extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         background = inflater.inflate(R.layout.top_header, container, false);
         backButton = (ImageView) background.findViewById(R.id.back_button);
         topText = (TextView) background.findViewById(R.id.top_text);
         progressSquare = (View) background.findViewById(R.id.progress_square);
+        settingsButton = (ImageView) background.findViewById(R.id.settings_button);
 
         backButton.setOnClickListener(
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         activityCommander.backButtonClicked();
+                    }
+                }
+        );
+
+        settingsButton.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        PopupMenu popupMenu = new PopupMenu(getActivity().getApplicationContext(), v);
+                        popupMenu.setOnMenuItemClickListener(TopHeader.this);
+                        popupMenu.inflate(R.menu.settings_menu);
+                        popupMenu.show();
                     }
                 }
         );
@@ -115,4 +132,8 @@ public class TopHeader extends Fragment {
         progressSquare.startAnimation(anim);
     }
 
+    @Override
+    public boolean onMenuItemClick(MenuItem item) {
+        return false;
+    }
 }

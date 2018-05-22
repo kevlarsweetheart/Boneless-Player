@@ -209,12 +209,6 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
         super.onDestroy();
     }
 
-    @Override
-    protected void onStop() {
-        musicService.onDestroy();
-        super.onStop();
-    }
-
     /*--------------------------------------------------------------------------------------------*/
     /*------------------------------- Methods for state managing ---------------------------------*/
     /*--------------------------------------------------------------------------------------------*/
