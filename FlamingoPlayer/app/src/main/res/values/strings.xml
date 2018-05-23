@@ -4,4 +4,9 @@
     <string name="play_shuffled">Play shuffled</string>
     <string name="songs_cnt">Tracks: %1$d</string>
     <string name="albums_cnt">Albums: %1$d</string>
+    <string name="your_email">Username</string>
+    <string name="enable_scrobbling">Enable scrobbling</string>
+    <string name="log_off">Log off</string>
+    <string name="your_password">Password</string>
+    <string name="diable_scrobbling">Disable scrobbling</string>
 </resources>

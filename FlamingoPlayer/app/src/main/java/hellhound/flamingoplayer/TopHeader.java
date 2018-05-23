@@ -32,6 +32,7 @@ public class TopHeader extends Fragment implements PopupMenu.OnMenuItemClickList
 
     public interface TopHeaderListener{
         void backButtonClicked();
+        void setLastfm();
     }
 
     @Override
@@ -134,6 +135,16 @@ public class TopHeader extends Fragment implements PopupMenu.OnMenuItemClickList
 
     @Override
     public boolean onMenuItemClick(MenuItem item) {
-        return false;
+        int id = item.getItemId();
+
+        switch (id){
+            case R.id.lastfm_item:
+                activityCommander.setLastfm();
+                break;
+
+            case R.id.reftresh_button:
+                break;
+        }
+        return true;
     }
 }
