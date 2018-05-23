@@ -17,10 +17,10 @@ public class LastfmHelper {
     private final static String TAG = "main_activity";
     String api_key;
     String secret;
-    String username;
-    String password;
-    String sk;
-    final static String BASE = "https://ws.audioscrobbler.com/2.0/?";
+    String username = "";
+    String password = "";
+    String sk = "";
+    private final static String BASE = "https://ws.audioscrobbler.com/2.0/?";
 
     private static LastfmHelper instance;
 

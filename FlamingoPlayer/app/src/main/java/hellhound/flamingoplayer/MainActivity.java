@@ -9,7 +9,10 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.graphics.Point;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
+import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -20,6 +23,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Display;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.Animation;
 import android.view.animation.Interpolator;
@@ -27,9 +31,12 @@ import android.view.animation.Transformation;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.Switch;
 import android.widget.Toast;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Stack;
 
@@ -50,6 +57,8 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
     private HomeScreenAdapter adapter;
     private PlayerAdapter playerAdapter;
     public DBHelper db;
+    private ProgressBar progressBar;
+
     public enum STATES {HOME, ARTISTS, ALBUMS, TRACKS, PLAYLISTS, CHARTS}
     private Stack<STATES> state;
     private TopHeader topHeader;
@@ -62,6 +71,8 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
     public final static String LASTFM_PREFS = "lastfm";
     public final static String LASTFM_USERNAME = "username";
     public final static String LASTFM_PASSWORD = "password";
+    public final static String LASTFM_SK = "sk";
+    public final static String LASTFM_SCROBBLING = "scrobbling";
     public LastfmHelper lastfmHelper;
     int screenHeight;
 
@@ -79,11 +90,58 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
     public final static int TASK_INFO = 1;
     public final static String PARAM_TRACK_NUM = "track_number";
 
+    static class LastFmHandler extends Handler{
+        private final WeakReference<MainActivity> activityWeakReference;
+
+        LastFmHandler(MainActivity activity){
+            activityWeakReference = new WeakReference<>(activity);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            MainActivity activity = activityWeakReference.get();
+            if(activity != null){
+                switch (msg.what){
+                    case LOGIN_SUCCESS:
+                        activity.updateLastFmUser((String) ((ArrayList)msg.obj).get(0),
+                                (String) ((ArrayList)msg.obj).get(1));
+                        break;
+
+                    case LOGIN_FAIL:
+                        activity.sayLastFmUserNotSet();
+                        break;
+                }
+                activity.switchProgressBar(false);
+            }
+        }
+    }
+    private LastFmHandler handler = new LastFmHandler(this);
+    static final int LOGIN_SUCCESS = 1;
+    static final int LOGIN_FAIL = 0;
+    private void updateLastFmUser(String username, String password){
+        Log.i(TAG, "Successfully logged in");
+        SharedPreferences prefs = getSharedPreferences(LASTFM_PREFS, MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString(LASTFM_USERNAME, username);
+        editor.putString(LASTFM_PASSWORD, password);
+        editor.putString(LASTFM_SK, lastfmHelper.sk);
+        Log.i(TAG, lastfmHelper.sk);
+        editor.apply();
+        Log.i(TAG, "Shared settings done");
+        Toast.makeText(getApplicationContext(), "Successfully logged in", Toast.LENGTH_SHORT).show();
+    }
+    private void sayLastFmUserNotSet(){
+
+        Log.i(TAG, "Could not log in");
+        Toast.makeText(getApplicationContext(), "Could not log in", Toast.LENGTH_SHORT).show();
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        setupProgressBar();
         topHeader = (TopHeader) getSupportFragmentManager().findFragmentById(R.id.fragment);
         playControls = (PlayControls) getSupportFragmentManager().findFragmentById(R.id.fragment2);
         centerPlayer = (CenterPlayer) getSupportFragmentManager().findFragmentById(R.id.fragment3);
@@ -91,8 +149,22 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
         Point size = new Point();
         display.getSize(size);
         screenHeight = size.y;
+
+        //Setting up LastFmHelper
+        Log.i(TAG, "Initializing Lastfm");
         lastfmHelper = LastfmHelper.getInstance(getResources().getString(R.string.last_api_key),
                 getResources().getString(R.string.last_shared_secret));
+        SharedPreferences prefs = getSharedPreferences(LASTFM_PREFS, MODE_PRIVATE);
+        String username = prefs.getString(LASTFM_USERNAME, "");
+        String password = prefs.getString(LASTFM_PASSWORD, "");
+        String sk = prefs.getString(LASTFM_SK, "");
+        Log.i(TAG, username + " - " + password + " - " + sk);
+        if (!username.equals("") && !password.equals("") && !sk.equals("")){
+            lastfmHelper.username = username;
+            lastfmHelper.password = password;
+            lastfmHelper.sk = sk;
+        }
+        scrobbling = prefs.getBoolean(LASTFM_SCROBBLING, false);
 
 
         //Setting up RecyclerView, Database and States stack
@@ -284,8 +356,10 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
 
         SharedPreferences prefs = getSharedPreferences(LASTFM_PREFS, MODE_PRIVATE);
         String username = prefs.getString(LASTFM_USERNAME, "");
-        if (!username.equals("")){
+        String _password = prefs.getString(LASTFM_PASSWORD, "");
+        if (!username.equals("") && !_password.equals("")){
             user.setText(username);
+            password.setText(_password);
         }
 
         if(scrobbling){
@@ -296,26 +370,36 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
             sw.setChecked(false);
         }
 
-        dialogBuilder.setTitle("LastFm scrobbling");
-        dialogBuilder.setMessage("Enter your LastFm username and password");
+        dialogBuilder.setTitle("Last.fm scrobbling");
 
         dialogBuilder.setPositiveButton("Done", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
-                String username = user.getText().toString();
-                String passw = password.getText().toString();
-                if(lastfmHelper.login(username, passw)){
-                    Log.i(TAG, "Successfully logged in");
-                    SharedPreferences prefs = getSharedPreferences(LASTFM_PREFS, MODE_PRIVATE);
-                    SharedPreferences.Editor editor = prefs.edit();
-                    editor.putString(LASTFM_USERNAME, username);
-                    editor.putString(LASTFM_PASSWORD, passw);
-                    editor.apply();
-                    Log.i(TAG, "Shared settings done");
-                    Toast.makeText(getApplicationContext(), "Successfully logged in", Toast.LENGTH_SHORT).show();
-                } else {
-                    Log.i(TAG, "Could not log in");
-                    Toast.makeText(getApplicationContext(), "Could not log in", Toast.LENGTH_SHORT).show();
+                Log.i(TAG, "Clicked Done");
+                final String username = user.getText().toString();
+                final String passw = password.getText().toString();
+
+                if((lastfmHelper.password.equals(passw)) && (lastfmHelper.username.equals(username))){
+                    return;
                 }
+
+                Thread thread = new Thread(new Runnable() {
+                    Message msg;
+                    @Override
+                    public void run() {
+                        boolean logged = lastfmHelper.login(username, passw);
+                        if(logged){
+                            ArrayList<String> logpass = new ArrayList<>();
+                            logpass.add(username);
+                            logpass.add(passw);
+                            msg = handler.obtainMessage(LOGIN_SUCCESS, logpass);
+                            handler.sendMessage(msg);
+                        } else {
+                            handler.sendEmptyMessage(LOGIN_FAIL);
+                        }
+                    }
+                });
+                switchProgressBar(true);
+                thread.start();
             }
         });
         dialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -466,47 +550,49 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
     /*--------------------------------------------------------------------------------------------*/
 
     public boolean enableScrobbling(boolean enable){
+        SharedPreferences prefs = getSharedPreferences(LASTFM_PREFS, MODE_PRIVATE);
+        SharedPreferences.Editor edit = prefs.edit();
         if(enable){
-            SharedPreferences prefs = getSharedPreferences(LASTFM_PREFS, MODE_PRIVATE);
             if(prefs.contains(LASTFM_USERNAME)){
                 scrobbling = true;
+                edit.putBoolean(LASTFM_SCROBBLING, true);
+                edit.apply();
                 return true;
             } else {
+                edit.putBoolean(LASTFM_SCROBBLING, false);
+                edit.apply();
                 return false;
             }
         } else {
             scrobbling = false;
+            edit.putBoolean(LASTFM_SCROBBLING, false);
+            edit.apply();
             return false;
         }
     }
 
     /*--------------------------------------------------------------------------------------------*/
-    /*----------------------------------- Methods for animation ----------------------------------*/
+    /*--------------------------------------------- Misc -----------------------------------------*/
     /*--------------------------------------------------------------------------------------------*/
 
-    public void animateHeight(final View v, final int height){
-        final int initialHeight = v.getHeight();
-        int duration = 500;
-        Interpolator interpolator = new AccelerateInterpolator(2);
-        v.getLayoutParams().height = initialHeight;
-        v.requestLayout();
-        Animation a = new Animation() {
-            @Override
-            protected void applyTransformation(float interpolatedTime, Transformation t) {
-                Log.i(TAG, "InterpolatedTime: " + interpolatedTime);
-                Log.i(TAG, "Collapsing height: " + (initialHeight - (int) (height * interpolatedTime)));
-                v.getLayoutParams().height = initialHeight - (int) (height * interpolatedTime);
-                v.requestLayout();
-            }
+   public void setupProgressBar(){
+        progressBar = new ProgressBar(getApplicationContext(), null, android.R.attr.progressBarStyleHorizontal);
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(100,100);
+        params.addRule(RelativeLayout.CENTER_IN_PARENT);
+        ConstraintLayout layout = findViewById(R.id.main);
+        layout.addView(progressBar);
+        progressBar.setVisibility(View.GONE);
+   }
 
-            @Override
-            public boolean willChangeBounds() {
-                return true;
-            }
-        };
-        a.setDuration(duration);
-        a.setInterpolator(interpolator);
-        v.startAnimation(a);
-    }
+   public void switchProgressBar(boolean enable){
+       if(enable){
+           progressBar.setVisibility(View.VISIBLE);
+           getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                   WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+       } else {
+           progressBar.setVisibility(View.GONE);
+           getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+       }
+   }
 
 }
