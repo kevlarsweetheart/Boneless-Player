@@ -20,6 +20,7 @@ public class LastfmHelper {
     String username = "";
     String password = "";
     String sk = "";
+    boolean scrobbling = false;
     private final static String BASE = "https://ws.audioscrobbler.com/2.0/?";
 
     private static LastfmHelper instance;
@@ -116,8 +117,11 @@ public class LastfmHelper {
     }
 
     public boolean scrobble(String artist, String track){
+        UrlNormalizer normalizer = new UrlNormalizer();
         String _artist = artist.replaceAll(" ", "+");
         String _track = track.replaceAll(" ", "+");
+        _artist = normalizer.normalize(_artist);
+        _track = normalizer.normalize(_track);
         long timestamp = System.currentTimeMillis() / 1000;
         String api_sig = "api_key" + api_key + "artist" + artist + "methodtrack.scrobble" + "sk" + sk + "timestamp" + timestamp + "track" + track + secret;
         Log.i(TAG, api_sig);
@@ -134,5 +138,11 @@ public class LastfmHelper {
         }
         Log.i(TAG, response);
         return true;
+    }
+
+    public void logoff(){
+        username = "";
+        password = "";
+        sk = "";
     }
 }

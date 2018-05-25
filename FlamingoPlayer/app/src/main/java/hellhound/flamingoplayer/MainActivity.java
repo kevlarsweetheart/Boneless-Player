@@ -24,10 +24,6 @@ import android.util.Log;
 import android.view.Display;
 import android.view.View;
 import android.view.WindowManager;
-import android.view.animation.AccelerateInterpolator;
-import android.view.animation.Animation;
-import android.view.animation.Interpolator;
-import android.view.animation.Transformation;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
@@ -39,10 +35,6 @@ import android.widget.Toast;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Stack;
-
-import de.umass.lastfm.Authenticator;
-import de.umass.lastfm.Caller;
-import de.umass.lastfm.Session;
 
 public class MainActivity extends AppCompatActivity implements TopHeader.TopHeaderListener, PlayControls.PlayControlsListener,
         CenterPlayer.CenterPlayerListener{
@@ -90,6 +82,8 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
     public final static int TASK_INFO = 1;
     public final static String PARAM_TRACK_NUM = "track_number";
 
+    public final static int TASK_SCROBBLE = 2;
+
     static class LastFmHandler extends Handler{
         private final WeakReference<MainActivity> activityWeakReference;
 
@@ -115,7 +109,7 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
             }
         }
     }
-    private LastFmHandler handler = new LastFmHandler(this);
+    private LastFmHandler lastFmHandler = new LastFmHandler(this);
     static final int LOGIN_SUCCESS = 1;
     static final int LOGIN_FAIL = 0;
     private void updateLastFmUser(String username, String password){
@@ -125,6 +119,7 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
         editor.putString(LASTFM_USERNAME, username);
         editor.putString(LASTFM_PASSWORD, password);
         editor.putString(LASTFM_SK, lastfmHelper.sk);
+        enableScrobbling(true);
         Log.i(TAG, lastfmHelper.sk);
         editor.apply();
         Log.i(TAG, "Shared settings done");
@@ -158,13 +153,13 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
         String username = prefs.getString(LASTFM_USERNAME, "");
         String password = prefs.getString(LASTFM_PASSWORD, "");
         String sk = prefs.getString(LASTFM_SK, "");
-        Log.i(TAG, username + " - " + password + " - " + sk);
+        scrobbling = prefs.getBoolean(LASTFM_SCROBBLING, false);
         if (!username.equals("") && !password.equals("") && !sk.equals("")){
             lastfmHelper.username = username;
             lastfmHelper.password = password;
             lastfmHelper.sk = sk;
+            lastfmHelper.scrobbling = scrobbling;
         }
-        scrobbling = prefs.getBoolean(LASTFM_SCROBBLING, false);
 
 
         //Setting up RecyclerView, Database and States stack
@@ -232,6 +227,11 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
                         currentPlayList.setCurrentTrack(num);
                         playControls.setTrack(currentPlayList.getTrack(num));
                         layoutManagerHorizontal.scrollToPosition(num);
+                        break;
+
+                    case TASK_SCROBBLE:
+                        int _num = intent.getIntExtra(PARAM_TRACK_NUM, 0);
+                        scrobble(_num);
                         break;
                 }
 
@@ -391,10 +391,10 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
                             ArrayList<String> logpass = new ArrayList<>();
                             logpass.add(username);
                             logpass.add(passw);
-                            msg = handler.obtainMessage(LOGIN_SUCCESS, logpass);
-                            handler.sendMessage(msg);
+                            msg = lastFmHandler.obtainMessage(LOGIN_SUCCESS, logpass);
+                            lastFmHandler.sendMessage(msg);
                         } else {
-                            handler.sendEmptyMessage(LOGIN_FAIL);
+                            lastFmHandler.sendEmptyMessage(LOGIN_FAIL);
                         }
                     }
                 });
@@ -428,9 +428,12 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
                         SharedPreferences.Editor editor = pref.edit();
                         editor.clear();
                         editor.apply();
+                        lastfmHelper.logoff();
                         sw.setText(R.string.enable_scrobbling);
                         sw.setChecked(false);
                         enableScrobbling(false);
+                        user.setText("");
+                        password.setText("");
                     }
                 }
         );
@@ -479,7 +482,7 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
             Log.i(TAG, "Connected?");
             MusicService.LocalBinder binder = (MusicService.LocalBinder) service;
             musicService = binder.getService();
-            musicService.initPlayer();
+            musicService.initPlayer(lastfmHelper);
             isBound = true;
             Log.i(TAG, "onServiceConnected");
 
@@ -555,20 +558,49 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
         if(enable){
             if(prefs.contains(LASTFM_USERNAME)){
                 scrobbling = true;
+                lastfmHelper.scrobbling = true;
                 edit.putBoolean(LASTFM_SCROBBLING, true);
                 edit.apply();
                 return true;
             } else {
+                lastfmHelper.scrobbling = false;
                 edit.putBoolean(LASTFM_SCROBBLING, false);
                 edit.apply();
                 return false;
             }
         } else {
             scrobbling = false;
+            lastfmHelper.scrobbling = false;
             edit.putBoolean(LASTFM_SCROBBLING, false);
             edit.apply();
             return false;
         }
+    }
+
+    public void scrobble(final int trackNum){
+        final Handler handler = new Handler();
+        final TrackItem trackItem = currentPlayList.getTrack(trackNum);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final boolean res = lastfmHelper.scrobble(trackItem.getArtistName(), trackItem.getName());
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(res){
+                            Log.i(TAG, trackItem.getArtistName() +
+                                    " - " + trackItem.getName() + " scrobbled");
+                            Toast.makeText(MainActivity.this, trackItem.getArtistName() +
+                                    " - " + trackItem.getName() + " scrobbled", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Log.i(TAG, trackItem.getArtistName() +
+                                    " - " + trackItem.getName() + " NOT scrobbled");
+                        }
+
+                    }
+                });
+            }
+        }).start();
     }
 
     /*--------------------------------------------------------------------------------------------*/

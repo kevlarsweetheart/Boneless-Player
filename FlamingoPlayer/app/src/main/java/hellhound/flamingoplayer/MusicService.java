@@ -37,7 +37,12 @@ public class MusicService extends Service {
     private SimpleExoPlayer player;
     public boolean isPlaying = false;
     int playlistLen = 0;
+    LastfmHelper lastfmHelper;
     DynamicConcatenatingMediaSource source;
+    private int progress = 0;
+    private int prevProgress = 0;
+    double progressToScrobble = 0.1;
+    boolean scrobbled;
 
     Handler handler;
     private final Runnable updateProgressAction = new Runnable() {
@@ -68,11 +73,12 @@ public class MusicService extends Service {
         }
     }
 
-    public void initPlayer(){
+    public void initPlayer(LastfmHelper lastfmHelper){
         player = ExoPlayerFactory.newSimpleInstance(this, new DefaultTrackSelector());
         player.addListener(eventListener);
         source = new DynamicConcatenatingMediaSource();
         handler = new Handler();
+        this.lastfmHelper = lastfmHelper;
         Log.i(TAG, "Player inited");
     }
 
@@ -89,6 +95,7 @@ public class MusicService extends Service {
         @Override
         public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
             Log.i(TAG, "onTracksChanged");
+            scrobbled = false;
         }
 
         @Override
@@ -108,6 +115,9 @@ public class MusicService extends Service {
                     Log.i(TAG,"Playback ended!");
                     setPlayPause(false);
                     player.seekTo(0);
+                    scrobbled = false;
+                    progress = 0;
+                    prevProgress = 0;
 
                 case Player.STATE_READY:
                     Log.i(TAG,"ExoPlayer ready! pos: " + player.getCurrentPosition());
@@ -138,6 +148,9 @@ public class MusicService extends Service {
         public void onPositionDiscontinuity(int reason) {
             Log.i(TAG, "onPositionDiscontinuity");
             sendTrackNumber();
+            scrobbled = false;
+            progress = 0;
+            prevProgress = 0;
         }
 
         @Override
@@ -148,6 +161,7 @@ public class MusicService extends Service {
         @Override
         public void onSeekProcessed() {
             Log.i(TAG, "onSeekProcessed");
+            prevProgress = (int) player.getCurrentPosition();
         }
     };
 
@@ -165,7 +179,30 @@ public class MusicService extends Service {
     private void updateProgress(){
         int duration = player == null ? 0 : (int)player.getDuration();
         int position = player == null ? 0 : (int)player.getCurrentPosition();
+        int deltaSeek = position - prevProgress;
+        if((deltaSeek < 3000) && (deltaSeek > 0)){
+            progress += deltaSeek;
+        }
+        prevProgress = position;
         Intent intent = new Intent(MainActivity.BROADCAST_ACTION);
+        double percent = ((double) progress) / ((double) duration);
+        if((percent > progressToScrobble) && lastfmHelper.scrobbling && !scrobbled){
+            Log.i(TAG, "Going to scrobble");
+            scrobbled = true;
+            intent.putExtra(MainActivity.PARAM_TASK, MainActivity.TASK_SCROBBLE);
+            intent.putExtra(MainActivity.PARAM_TRACK_NUM, player.getCurrentWindowIndex());
+            try {
+                sendBroadcast(intent);
+            } catch (Exception e){
+                Log.i(TAG, e.getMessage());
+                e.printStackTrace();
+            } finally {
+                intent.removeExtra(MainActivity.PARAM_TASK);
+                intent.removeExtra(MainActivity.PARAM_TRACK_NUM);
+            }
+
+
+        }
         try {
             intent.putExtra(MainActivity.PARAM_TASK, MainActivity.TASK_PROGRESS);
             intent.putExtra(MainActivity.PARAM_PROGRESS, position);

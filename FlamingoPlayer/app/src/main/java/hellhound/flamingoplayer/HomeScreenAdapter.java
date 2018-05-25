@@ -407,6 +407,9 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
             private String downloadAndSaveCover(ArtistItem artist, AlbumItem album){
                 String albumName = album.getName();
                 String artistName = artist.getName();
+                UrlNormalizer normalizer = new UrlNormalizer();
+                albumName = normalizer.normalize(albumName);
+                artistName = normalizer.normalize(artistName);
                 String url = "https://www.googleapis.com/customsearch/v1?key=AIzaSyC-FAI2A9BeOSIdpKral0LO3Z2lqZoStHk&cx=018060032051945042082:ooluxsoos3m&num=1&q=";
                 url += artistName.replaceAll(" ", "+") + "+" + albumName.replaceAll(" ", "+");
                 try {
