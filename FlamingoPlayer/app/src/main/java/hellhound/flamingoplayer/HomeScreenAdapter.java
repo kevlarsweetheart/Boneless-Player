@@ -354,7 +354,6 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
         @Override
         public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-            menu.setHeaderTitle("Select action");
             android.view.MenuItem fetch = menu.add(this.getAdapterPosition(), 0, 0, "Fetch album art");
             android.view.MenuItem cake = menu.add(this.getAdapterPosition(), 1, 0, "Get a cake");
             fetch.setOnMenuItemClickListener(listener);
