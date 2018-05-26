@@ -3,6 +3,7 @@ package hellhound.flamingoplayer;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Trace;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -13,11 +14,16 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Animation;
+import android.view.animation.BounceInterpolator;
+import android.view.animation.OvershootInterpolator;
 import android.view.animation.Transformation;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
+
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 
 public class TopHeader extends Fragment implements PopupMenu.OnMenuItemClickListener{
 
@@ -27,6 +33,11 @@ public class TopHeader extends Fragment implements PopupMenu.OnMenuItemClickList
     View progressSquare;
     View background;
     ImageView settingsButton;
+    ImageView scrobbling;
+    public static final int IDLE = 0;
+    public static final int SCROBBLED = 1;
+    public static final int LASTFM = 2;
+    public static final int ERROR = 3;
 
     TopHeaderListener activityCommander;
 
@@ -59,6 +70,7 @@ public class TopHeader extends Fragment implements PopupMenu.OnMenuItemClickList
         topText = (TextView) background.findViewById(R.id.top_text);
         progressSquare = (View) background.findViewById(R.id.progress_square);
         settingsButton = (ImageView) background.findViewById(R.id.settings_button);
+        scrobbling = (ImageView) background.findViewById(R.id.scrobbling);
 
         backButton.setOnClickListener(
                 new View.OnClickListener() {
@@ -146,5 +158,54 @@ public class TopHeader extends Fragment implements PopupMenu.OnMenuItemClickList
                 break;
         }
         return true;
+    }
+
+    public void changeScrobbing(int state){
+        if(state == IDLE) {
+            scrobbling.setImageResource(android.R.color.transparent);
+        }
+        if(state == LASTFM) {
+            GlideApp.with(this).load(R.drawable.lasr_ico).transition(DrawableTransitionOptions.withCrossFade())
+                    .into(scrobbling);
+        }
+        if ((state == SCROBBLED) || (state == ERROR)) {
+            final Fragment f = this;
+            scrobbling.animate().withEndAction(new Runnable() {
+                @Override
+                public void run() {
+                    scrobbling.animate().setDuration(100).translationY(0).setInterpolator(new AccelerateDecelerateInterpolator()).start();
+                }
+            }).translationY(-10).setInterpolator(new OvershootInterpolator()).setDuration(700).start();
+            if(state == SCROBBLED){
+                GlideApp.with(f).load(R.drawable.check_ico).into(scrobbling);
+
+            } else {
+                GlideApp.with(f).load(R.drawable.error_ico).into(scrobbling);
+            }
+            final Handler handler = new Handler();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    long futureTime = System.currentTimeMillis() + 1000;
+                    while (System.currentTimeMillis() < futureTime){
+                        synchronized (this){
+                            try {
+                                wait(futureTime - System.currentTimeMillis());
+                            } catch (Exception e){
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            GlideApp.with(f).load(R.drawable.lasr_ico).transition(DrawableTransitionOptions.withCrossFade())
+                                    .into(scrobbling);
+                        }
+                    });
+
+                }
+            }).start();
+        }
     }
 }

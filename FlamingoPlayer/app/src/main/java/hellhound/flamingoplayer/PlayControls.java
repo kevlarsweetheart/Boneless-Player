@@ -7,20 +7,27 @@ import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.view.animation.LinearOutSlowInInterpolator;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.LinearInterpolator;
+import android.view.animation.OvershootInterpolator;
+import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 
 public class PlayControls extends Fragment {
 
-    ImageView nextButton, prevButton, playButton;
+    ImageView nextButton, prevButton, playButton, arrowl, arrowr;
     TextView trackView, artistAlbumView;
     ConstraintLayout textArea;
     public enum CONTROLS {PLAY, NEXT, PREV}
     PlayControlsListener activityCommander;
+    public final static int UP = 0;
+    public final static int DOWN = 1;
+
 
     public interface PlayControlsListener{
         void controlButtonClicked(CONTROLS action);
@@ -53,6 +60,8 @@ public class PlayControls extends Fragment {
         trackView = view.findViewById(R.id.track);
         artistAlbumView = view.findViewById(R.id.artist_album);
         textArea = view.findViewById(R.id.text_area);
+        arrowl = view.findViewById(R.id.arrowl);
+        arrowr = view.findViewById(R.id.arrowr);
 
         nextButton.setOnClickListener(
                 new View.OnClickListener() {
@@ -103,6 +112,16 @@ public class PlayControls extends Fragment {
             } else {
                 GlideApp.with(parent).load(R.mipmap.play_button).into(playButton);
             }
+        }
+    }
+
+    public void rotateArrows(int where){
+        if(where == UP){
+            arrowl.animate().rotation(90).setInterpolator(new LinearOutSlowInInterpolator()).start();
+            arrowr.animate().rotation(90).setInterpolator(new LinearOutSlowInInterpolator()).start();
+        } else {
+            arrowl.animate().rotation(-90).setInterpolator(new LinearOutSlowInInterpolator()).start();
+            arrowr.animate().rotation(270).setInterpolator(new LinearOutSlowInInterpolator()).start();
         }
     }
 }

@@ -41,7 +41,7 @@ public class MusicService extends Service {
     DynamicConcatenatingMediaSource source;
     private int progress = 0;
     private int prevProgress = 0;
-    double progressToScrobble = 0.1;
+    double progressToScrobble = 0.5;
     boolean scrobbled;
 
     Handler handler;

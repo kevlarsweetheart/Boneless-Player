@@ -14,6 +14,7 @@ import android.os.IBinder;
 import android.os.Message;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.view.animation.LinearOutSlowInInterpolator;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -24,6 +25,11 @@ import android.util.Log;
 import android.view.Display;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.view.animation.LinearInterpolator;
+import android.view.animation.TranslateAnimation;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
@@ -153,12 +159,11 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
         String username = prefs.getString(LASTFM_USERNAME, "");
         String password = prefs.getString(LASTFM_PASSWORD, "");
         String sk = prefs.getString(LASTFM_SK, "");
-        scrobbling = prefs.getBoolean(LASTFM_SCROBBLING, false);
+        enableScrobbling(prefs.getBoolean(LASTFM_SCROBBLING, false));
         if (!username.equals("") && !password.equals("") && !sk.equals("")){
             lastfmHelper.username = username;
             lastfmHelper.password = password;
             lastfmHelper.sk = sk;
-            lastfmHelper.scrobbling = scrobbling;
         }
 
 
@@ -224,9 +229,16 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
 
                     case TASK_INFO:
                         int num = intent.getIntExtra(PARAM_TRACK_NUM, 0);
+                        if(num > currentPlayList.getCurrentTrack()){
+                            shakePlayRecycler(10);
+                        }
+                        if(num < currentPlayList.getCurrentTrack()){
+                            shakePlayRecycler(-10);
+                        }
                         currentPlayList.setCurrentTrack(num);
                         playControls.setTrack(currentPlayList.getTrack(num));
                         layoutManagerHorizontal.scrollToPosition(num);
+
                         break;
 
                     case TASK_SCROBBLE:
@@ -263,9 +275,10 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
                     .show(centerPlayer)
                     .commit();
             playerIsHidden = !playerIsHidden;
-            playRecyclerView.animate().translationY(0);
-            recyclerView.animate().translationY(-screenHeight);
+            playRecyclerView.animate().setInterpolator(new LinearOutSlowInInterpolator()).translationY(0);
+            recyclerView.animate().setInterpolator(new LinearOutSlowInInterpolator()).translationY(-screenHeight);
             topHeader.switchBackButton(STATES.ARTISTS);
+            playControls.rotateArrows(PlayControls.DOWN);
             return playerIsHidden;
         } else {
             FragmentManager fm = getSupportFragmentManager();
@@ -274,9 +287,10 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
                     .hide(centerPlayer)
                     .commit();
             playerIsHidden = !playerIsHidden;
-            playRecyclerView.animate().translationY(screenHeight);
-            recyclerView.animate().translationY(0);
+            playRecyclerView.animate().setInterpolator(new LinearOutSlowInInterpolator()).translationY(screenHeight);
+            recyclerView.animate().setInterpolator(new LinearOutSlowInInterpolator()).translationY(0);
             topHeader.switchBackButton(getState());
+            playControls.rotateArrows(PlayControls.UP);
             return playerIsHidden;
         }
     }
@@ -371,7 +385,7 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
         }
 
         dialogBuilder.setTitle("Last.fm scrobbling");
-
+        dialogBuilder.setIcon(R.drawable.lasr_ico);
         dialogBuilder.setPositiveButton("Done", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 Log.i(TAG, "Clicked Done");
@@ -532,6 +546,7 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
         if(currentPlayList.getSize() > 0) {
             int nextTrack = musicService.nextTrack();
             currentPlayList.setCurrentTrack(nextTrack);
+            shakePlayRecycler(10);
             return nextTrack;
         } else {
             return 0;
@@ -542,6 +557,7 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
         if(currentPlayList.getSize() > 0) {
             int nextTrack = musicService.prevTrack(force);
             currentPlayList.setCurrentTrack(nextTrack);
+            shakePlayRecycler(-10);
             return nextTrack;
         } else {
             return 0;
@@ -555,22 +571,17 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
     public boolean enableScrobbling(boolean enable){
         SharedPreferences prefs = getSharedPreferences(LASTFM_PREFS, MODE_PRIVATE);
         SharedPreferences.Editor edit = prefs.edit();
-        if(enable){
-            if(prefs.contains(LASTFM_USERNAME)){
-                scrobbling = true;
-                lastfmHelper.scrobbling = true;
-                edit.putBoolean(LASTFM_SCROBBLING, true);
-                edit.apply();
-                return true;
-            } else {
-                lastfmHelper.scrobbling = false;
-                edit.putBoolean(LASTFM_SCROBBLING, false);
-                edit.apply();
-                return false;
-            }
+        if(enable && prefs.contains(LASTFM_USERNAME)){
+            scrobbling = true;
+            lastfmHelper.scrobbling = true;
+            edit.putBoolean(LASTFM_SCROBBLING, true);
+            edit.apply();
+            topHeader.changeScrobbing(TopHeader.LASTFM);
+            return true;
         } else {
             scrobbling = false;
             lastfmHelper.scrobbling = false;
+            topHeader.changeScrobbing(TopHeader.IDLE);
             edit.putBoolean(LASTFM_SCROBBLING, false);
             edit.apply();
             return false;
@@ -590,11 +601,11 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
                         if(res){
                             Log.i(TAG, trackItem.getArtistName() +
                                     " - " + trackItem.getName() + " scrobbled");
-                            Toast.makeText(MainActivity.this, trackItem.getArtistName() +
-                                    " - " + trackItem.getName() + " scrobbled", Toast.LENGTH_SHORT).show();
+                            topHeader.changeScrobbing(TopHeader.SCROBBLED);
                         } else {
                             Log.i(TAG, trackItem.getArtistName() +
                                     " - " + trackItem.getName() + " NOT scrobbled");
+                            topHeader.changeScrobbing(TopHeader.ERROR);
                         }
 
                     }
@@ -625,6 +636,15 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
            progressBar.setVisibility(View.GONE);
            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
        }
+   }
+
+   public void shakePlayRecycler(float dx){
+       final Animation anim = new TranslateAnimation(0, dx, 0, 0);
+       anim.setRepeatCount(1);
+       anim.setRepeatMode(Animation.REVERSE);
+       anim.setDuration(100);
+       anim.setInterpolator(new AccelerateDecelerateInterpolator());
+       playRecyclerView.setAnimation(anim);
    }
 
 }
