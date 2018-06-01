@@ -42,7 +42,7 @@
 
 
     <ImageView
-        android:id="@+id/imageView5"
+        android:id="@+id/repeat_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="15dp"
@@ -52,7 +52,7 @@
         app:srcCompat="@mipmap/replay_button" />
 
     <ImageView
-        android:id="@+id/imageView6"
+        android:id="@+id/shuffle_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="15dp"
@@ -68,7 +68,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/imageView5"
+        app:layout_constraintBottom_toTopOf="@+id/repeat_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -84,7 +84,7 @@
             android:ellipsize="marquee"
             android:marqueeRepeatLimit="marquee_forever"
             android:singleLine="true"
-            android:text="Lil Broomstick - Got Clout"
+            android:text="... - ..."
             android:gravity="center"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/arrowr"
@@ -100,7 +100,7 @@
             android:ellipsize="marquee"
             android:marqueeRepeatLimit="marquee_forever"
             android:singleLine="true"
-            android:text="Swept up"
+            android:text="..."
             android:gravity="center"
             app:layout_constraintBottom_toTopOf="@+id/artist_album"
             app:layout_constraintEnd_toStartOf="@+id/arrowr"

@@ -7,23 +7,21 @@ import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.animation.LinearOutSlowInInterpolator;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.LinearInterpolator;
-import android.view.animation.OvershootInterpolator;
-import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 
 public class PlayControls extends Fragment {
 
-    ImageView nextButton, prevButton, playButton, arrowl, arrowr;
+    ImageView nextButton, prevButton, playButton, arrowl, arrowr, shuffleButton, repeatButton;
     TextView trackView, artistAlbumView;
     ConstraintLayout textArea;
-    public enum CONTROLS {PLAY, NEXT, PREV}
+    public enum CONTROLS {PLAY, NEXT, PREV, SHUFFLE, REPEAT}
     PlayControlsListener activityCommander;
     public final static int UP = 0;
     public final static int DOWN = 1;
@@ -62,6 +60,8 @@ public class PlayControls extends Fragment {
         textArea = view.findViewById(R.id.text_area);
         arrowl = view.findViewById(R.id.arrowl);
         arrowr = view.findViewById(R.id.arrowr);
+        shuffleButton = view.findViewById(R.id.shuffle_button);
+        repeatButton = view.findViewById(R.id.repeat_button);
 
         nextButton.setOnClickListener(
                 new View.OnClickListener() {
@@ -95,6 +95,14 @@ public class PlayControls extends Fragment {
                     }
                 }
         );
+
+        shuffleButton.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        activityCommander.controlButtonClicked(CONTROLS.SHUFFLE);
+                }
+        });
         return view;
     }
 
@@ -112,6 +120,20 @@ public class PlayControls extends Fragment {
             } else {
                 GlideApp.with(parent).load(R.mipmap.play_button).into(playButton);
             }
+        }
+    }
+
+    public void shuffle(boolean shuffle){
+        Context context = getContext();
+        if(context == null){
+            return;
+        }
+
+        if (shuffle){
+            final int color = ContextCompat.getColor(context, R.color.chili);
+            shuffleButton.setColorFilter(color);
+        } else {
+            shuffleButton.setColorFilter(null);
         }
     }
 

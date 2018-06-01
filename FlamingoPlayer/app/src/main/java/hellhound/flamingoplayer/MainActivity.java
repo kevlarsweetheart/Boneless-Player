@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
     private TopHeader topHeader;
     private PlayControls playControls;
     private CenterPlayer centerPlayer;
-    private PlaylistItem currentPlayList;
+    PlaylistItem currentPlayList;
     private boolean playerIsHidden = false;
     private boolean scrobbling = false;
 
@@ -471,6 +471,15 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
                 playPrev(false);
                 break;
 
+            case SHUFFLE:
+                shuffle();
+                play(musicService.isPlaying);
+                break;
+
+            case REPEAT:
+                //TODO
+                break;
+
         }
     }
 
@@ -512,14 +521,31 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
     /*----------------------------------- Methods for playback -----------------------------------*/
     /*--------------------------------------------------------------------------------------------*/
 
-    public void setNewPlaylist(ArrayList<MenuItem> items, int currentTrack){
+    public void setNewPlaylist(ArrayList<MenuItem> items, int currentTrack, boolean shuffle){
         currentPlayList.clearTracks();
         currentPlayList.setTracks(items, currentTrack);
+
+        currentPlayList.shuffle(shuffle);
+        playControls.shuffle(currentPlayList.isShuffled);
+
         musicService.prepareTracks(currentPlayList.getTracksPaths());
         musicService.seekToWindow(currentPlayList.getCurrentTrack());
         playerAdapter.setItems(currentPlayList.getTracks());
         layoutManagerHorizontal.scrollToPosition(currentPlayList.getCurrentTrack());
         Log.i(TAG, "Prepared player");
+    }
+
+    public void shuffle(){
+        currentPlayList.shuffle(!currentPlayList.isShuffled);
+        playControls.shuffle(currentPlayList.isShuffled);
+        if(currentPlayList.getSize() > 0){
+            currentPlayList.setCurrentTrack(0);
+            musicService.prepareTracks(currentPlayList.getTracksPaths());
+            musicService.seekToWindow(currentPlayList.getCurrentTrack());
+            playerAdapter.setItems(currentPlayList.getTracks());
+            layoutManagerHorizontal.scrollToPosition(currentPlayList.getCurrentTrack());
+            Log.i(TAG, "Prepared player");
+        }
     }
 
     public boolean play(){

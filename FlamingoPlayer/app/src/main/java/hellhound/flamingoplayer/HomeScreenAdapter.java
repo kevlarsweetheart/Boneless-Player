@@ -460,9 +460,11 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     /*--------------------------------------------------------------------------------------------*/
     /*---------------------------------- Play All View Holder ------------------------------------*/
     /*--------------------------------------------------------------------------------------------*/
-    public class ViewHolderPlayAll extends RecyclerView.ViewHolder implements View.OnClickListener{
+    public class ViewHolderPlayAll extends RecyclerView.ViewHolder{
         TextView viewAll;
         TextView playShuffle;
+        private final static int PLAYALL = 0;
+        private final static int SHUFFLE = 1;
 
         public ViewHolderPlayAll(View itemView) {
             super(itemView);
@@ -471,14 +473,45 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         }
 
         public void setListeners(){
-            viewAll.setOnClickListener(this);
-        }
+            viewAll.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Log.i(TAG, "Clicked on viewAll button");
+                    viewAll.setVisibility(View.GONE);
+                    handleClicks(getAdapterPosition(), ACTIONS.NEXT);
+                }
+            });
 
-        @Override
-        public void onClick(View v) {
-            Log.i(TAG, "Clicked on viewAll button");
-            viewAll.setVisibility(View.GONE);
-            handleClicks(getAdapterPosition(), ACTIONS.NEXT);
+            playShuffle.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Log.i(TAG, "Clicked on viewAll button");
+                    ArrayList<MenuItem> toPlay;
+                    switch (items.get(0).getType()){
+                        case ARTIST:
+                            toPlay = ((MainActivity) parent).db.getTracksOf((ArtistItem)items.get(0));
+                            break;
+
+                        case ALBUM:
+                            toPlay = ((MainActivity) parent).db.getTracksOf((AlbumItem) items.get(0));
+                            break;
+
+                        default:
+                            return;
+                    }
+                    for(MenuItem item : toPlay) {
+                        ((TrackItem) item).setArtistName(((MainActivity) parent).db
+                                .getArtistBy((TrackItem) item).getName());
+                        AlbumItem correspAlbum = ((MainActivity) parent).db
+                                .getAlbumBy((TrackItem) item);
+                        ((TrackItem) item).setAlbumName(correspAlbum.getName());
+                        ((TrackItem) item).setCoverPath(((MainActivity) parent).db
+                                .getCoverById(correspAlbum.getCoverId()));
+                    }
+                    ((MainActivity) parent).setNewPlaylist(toPlay, 0, true);
+                    ((MainActivity) parent).play(true);
+                }
+            });
         }
     }
 
@@ -508,7 +541,7 @@ public class HomeScreenAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         @Override
         public void onClick(View v) {
             Log.i(TAG, "Clicked on track");
-            ((MainActivity) parent).setNewPlaylist(items, getAdapterPosition());
+            ((MainActivity) parent).setNewPlaylist(items, getAdapterPosition(), ((MainActivity) parent).currentPlayList.isShuffled);
             ((MainActivity) parent).play(true);
         }
     }

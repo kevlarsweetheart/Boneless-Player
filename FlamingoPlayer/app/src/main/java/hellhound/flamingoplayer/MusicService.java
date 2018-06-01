@@ -330,4 +330,9 @@ public class MusicService extends Service {
     public void seekToWindow(int position){
         player.seekTo(position, 0);
     }
+
+    public int getRepeatState(){
+        player.setRepeatMode(Player.REPEAT_MODE_OFF);
+        return 0;
+    }
 }

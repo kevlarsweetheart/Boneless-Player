@@ -1,36 +1,47 @@
 package hellhound.flamingoplayer;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class PlaylistItem extends MenuItem {
 
     ArrayList<TrackItem> tracks;
+    ArrayList<Integer> originalOrder;
     private int currentTrack = 0;
+    boolean isShuffled = false;
 
     public PlaylistItem(String name) {
         super(name);
         this.type = TYPES.PLAYLIST;
         tracks = new ArrayList<>();
+        originalOrder = new ArrayList<>();
     }
 
     public PlaylistItem(String name, ArrayList<MenuItem> items) {
         super(name);
         this.type = TYPES.PLAYLIST;
+        tracks = new ArrayList<>();
+        originalOrder = new ArrayList<>();
         setTracks(items);
     }
 
     public PlaylistItem(String name, ArrayList<MenuItem> tracks, int currentTrack) {
         super(name);
         this.type = TYPES.PLAYLIST;
-        setTracks(tracks);
-        this.currentTrack = currentTrack;
+        this.tracks = new ArrayList<>();
+        originalOrder = new ArrayList<>();
+        setTracks(tracks, currentTrack);
     }
 
     public int setTracks(ArrayList<MenuItem> items){
         if (tracks.size() > 0){
             tracks.clear();
+            originalOrder.clear();
         }
         tracks = filterTracks(items);
+        for(TrackItem track : tracks){
+            originalOrder.add(track.getItemId());
+        }
         this.currentTrack = this.currentTrack - (items.size() - tracks.size());
         return tracks.size();
     }
@@ -78,6 +89,7 @@ public class PlaylistItem extends MenuItem {
 
     public void clearTracks(){
         this.tracks.clear();
+        this.originalOrder.clear();
         currentTrack = 0;
     }
 
@@ -91,5 +103,24 @@ public class PlaylistItem extends MenuItem {
 
     public void setCurrentTrack(int currentTrack) {
         this.currentTrack = currentTrack;
+    }
+
+    public void shuffle(boolean shuffle){
+        if(shuffle){
+            isShuffled = true;
+            Collections.shuffle(tracks);
+        } else {
+            isShuffled = false;
+            int currInd = 0;
+            while (currInd < tracks.size() - 1){
+                for(int i = currInd; i < originalOrder.size(); i++){
+                    if(originalOrder.get(currInd) == tracks.get(i).getItemId()){
+                        Collections.swap(tracks, i, currInd);
+                        break;
+                    }
+                }
+                currInd++;
+            }
+        }
     }
 }
