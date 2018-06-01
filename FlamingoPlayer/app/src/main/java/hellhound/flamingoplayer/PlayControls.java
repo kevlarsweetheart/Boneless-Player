@@ -15,6 +15,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.android.exoplayer2.Player;
+
 
 public class PlayControls extends Fragment {
 
@@ -103,6 +105,15 @@ public class PlayControls extends Fragment {
                         activityCommander.controlButtonClicked(CONTROLS.SHUFFLE);
                 }
         });
+
+        repeatButton.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        activityCommander.controlButtonClicked(CONTROLS.REPEAT);
+                    }
+                }
+        );
         return view;
     }
 
@@ -134,6 +145,30 @@ public class PlayControls extends Fragment {
             shuffleButton.setColorFilter(color);
         } else {
             shuffleButton.setColorFilter(null);
+        }
+    }
+
+    public void repeat(int repeatMode){
+        Context context = getContext();
+        if(context == null){
+            return;
+        }
+
+        final int color = ContextCompat.getColor(context, R.color.chili);
+        switch (repeatMode){
+            case Player.REPEAT_MODE_OFF:
+                GlideApp.with(context).load(R.mipmap.replay_button).into(repeatButton);
+                repeatButton.setColorFilter(null);
+                break;
+
+            case Player.REPEAT_MODE_ALL:
+                GlideApp.with(context).load(R.mipmap.replay_button).into(repeatButton);
+                break;
+
+            case Player.REPEAT_MODE_ONE:
+                GlideApp.with(context).load(R.mipmap.repeat_one_button).into(repeatButton);
+                repeatButton.setColorFilter(color);
+                break;
         }
     }
 

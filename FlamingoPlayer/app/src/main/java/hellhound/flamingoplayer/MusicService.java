@@ -331,8 +331,11 @@ public class MusicService extends Service {
         player.seekTo(position, 0);
     }
 
-    public int getRepeatState(){
-        player.setRepeatMode(Player.REPEAT_MODE_OFF);
-        return 0;
+    public int getRepeatMode(){
+        return player.getRepeatMode();
+    }
+
+    public void setRepeatMode(int repeatMode){
+        player.setRepeatMode(repeatMode);
     }
 }

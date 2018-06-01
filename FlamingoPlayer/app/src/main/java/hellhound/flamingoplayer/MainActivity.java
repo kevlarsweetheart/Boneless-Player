@@ -259,8 +259,6 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
         homeItems.add(new HomeScreenItem("Artists"));
         homeItems.add(new HomeScreenItem("Albums"));
         homeItems.add(new HomeScreenItem("Tracks"));
-        homeItems.add(new HomeScreenItem("Playlists"));
-        homeItems.add(new HomeScreenItem("Queue"));
     }
 
     public  ArrayList<MenuItem> getHomeItems(){
@@ -477,7 +475,7 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
                 break;
 
             case REPEAT:
-                //TODO
+                cycleRepeat();
                 break;
 
         }
@@ -588,6 +586,13 @@ public class MainActivity extends AppCompatActivity implements TopHeader.TopHead
         } else {
             return 0;
         }
+    }
+
+    public int cycleRepeat(){
+        int mode = (musicService.getRepeatMode() + 1) % 3;
+        musicService.setRepeatMode(mode);
+        playControls.repeat(mode);
+        return mode;
     }
 
     /*--------------------------------------------------------------------------------------------*/
