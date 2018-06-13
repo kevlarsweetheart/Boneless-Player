@@ -1,0 +1,14 @@
+.btn-nav > span {
+  color: $dark-purple;
+  position: relative;
+  font-family: 'Finger Paint', cursive;
+  font-weight: normal;
+  @include fullhd-and-above {
+    width: 100px;
+    height: 100px;
+  }
+  @include hd720-and-above {
+    width: 27px;
+    height: 27px;
+  }
+}

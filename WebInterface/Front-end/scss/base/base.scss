@@ -1,0 +1,24 @@
+/* Base Styles */
+
+body {
+  background-color: $body-color;
+  font-family: 'Nixie One', cursive;
+  font-weight: normal;
+}
+
+a {
+  color: $base-3;
+  text-decoration: none;
+}
+
+a:hover {
+  color: $base-3;
+}
+
+a:visited {
+  color: $base-3;
+}
+
+p {
+  color: black;
+}

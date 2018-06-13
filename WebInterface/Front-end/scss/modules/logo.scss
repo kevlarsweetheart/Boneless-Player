@@ -1,0 +1,54 @@
+.container-logo
+{
+  position: inherit;
+  margin-left: auto;
+  margin-right: auto;
+  @include fullhd-and-above
+  {
+    max-width: 515px;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    padding-left: 100px;
+    padding-right: 100px;
+  }
+}
+
+.logo
+{
+  overflow: hidden;
+  display: inline-block;
+}
+
+.logo-img > img {
+  @include fullhd-and-above {
+    width: 60px;
+    height: 60px;
+    margin-right: 30px;
+  }
+}
+
+.logo-span
+{
+  @include fullhd-and-above
+  {
+    height: 55px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+}
+
+.text
+{
+  color: $base-3;
+  position: relative;
+  font-family: 'Finger Paint', cursive;
+  font-weight: normal;
+  @include fullhd-and-above
+  {
+    font-size: 40px;
+  }
+}
+
+.container-img > img {
+  margin: auto;
+}
