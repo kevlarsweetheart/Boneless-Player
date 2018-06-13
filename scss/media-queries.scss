@@ -1,0 +1,33 @@
+$mq-fullhd: 1920px !default;
+$mq-hd-720: 1280px !default;
+$mq-pal: 768px !default;
+
+@mixin fullhd-and-above {
+  @media only screen and (min-width: $mq-fullhd - 23) and (orientation: landscape) {
+    @content;
+  }
+}
+
+@mixin hd720-and-above {
+  @media only screen and (min-width: $mq-hd-720) and (max-width: $mq-fullhd - 24) and (orientation: landscape) {
+    @content;
+  }
+}
+
+@mixin small-and-above {
+  @media only screen and (min-width: $mq-pal) and (max-width: $mq-hd-720 - 1) and (orientation: landscape) {
+    @content;
+  }
+}
+
+@mixin extra-small-only {
+  @media only screen and (max-width: $mq-pal - 1) and (orientation: landscape) {
+    @content;
+  }
+}
+
+@mixin mobile-vert {
+  @media only screen and (orientation: portrait) {
+    @content;
+  }
+}

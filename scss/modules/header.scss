@@ -1,0 +1,44 @@
+.header-primary {
+  background: linear-gradient(to bottom right, $base-1, $base-2);
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  width: 100%;
+  position: relative;
+  z-index: 1;
+  @include fullhd-and-above {
+    &:after {
+      content: "";
+      display: table;
+      clear: both;
+    }
+  }
+  @include hd720-and-above {
+    &:after {
+      content: "";
+      display: table;
+      clear: both;
+    }
+  }
+}
+
+.container-img {
+  background: linear-gradient(to bottom right, #7b68ee, $base-3); //#6495ed
+  width: 100%;
+  position: relative;
+  z-index: -1;
+  @include fullhd-and-above {
+    padding-top: 35px;
+    padding-bottom: 45px;
+    &:after {
+      content: "";
+      display: table;
+      clear: both;
+    }
+  }
+  @include hd720-and-above {
+    &:after {
+      content: "";
+      display: table;
+      clear: both;
+    }
+  }
+}

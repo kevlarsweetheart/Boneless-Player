@@ -1,0 +1,25 @@
+.nav > ul {
+  list-style: none;
+  padding: 0px;
+  margin: 0px;
+}
+
+.nav-primary {
+  width: 23%;
+  @include fullhd-and-above {
+    float: left;
+    li {
+      display: inline-block;
+      margin-left: 30px;
+      margin-right: 30px;
+    }
+  }
+  @include hd720-and-above {
+    float: right;
+    li {
+      display: inline-block;
+      margin-left: 20px;
+      margin-right: 20px;
+    }
+  }
+}
